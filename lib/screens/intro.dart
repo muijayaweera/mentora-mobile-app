@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'home.dart';
 
 class IntroScreen extends StatelessWidget {
@@ -17,22 +18,29 @@ class IntroScreen extends StatelessWidget {
               const Spacer(),
               // Welcome Text
               Column(
-                children: const [
+                children: [
                   Text(
                     'Welcome to',
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 28,
                       color: Colors.white,
                       fontWeight: FontWeight.w400,
                     ),
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    'mentora.',
-                    style: TextStyle(
-                      fontSize: 32,
-                      color: Color(0xFFB367FF),
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(height: 8),
+                  ShaderMask(
+                    shaderCallback: (bounds) => const LinearGradient(
+                      colors: [Color(0xFFC514C2), Color(0xFFA822D9)],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ).createShader(bounds),
+                    child: Text(
+                      'mentora.',
+                      style: GoogleFonts.poppins(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ],
@@ -45,15 +53,15 @@ class IntroScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: const Color(0xFFB367FF),
+                    color: const Color(0xFFA822D9),
                     width: 6,
                   ),
                 ),
               ),
               const SizedBox(height: 50),
-              const Text(
+              Text(
                 'Smarter learning starts here.',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 16,
                   color: Colors.white70,
                 ),
@@ -70,17 +78,18 @@ class IntroScreen extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFB367FF),
+                    backgroundColor: const Color(0xFFA822D9),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Get Started',
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 16,
                       color: Colors.white,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
@@ -93,4 +102,3 @@ class IntroScreen extends StatelessWidget {
     );
   }
 }
-
