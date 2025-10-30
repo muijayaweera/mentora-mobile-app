@@ -4,10 +4,11 @@ import 'screens/login.dart';
 import 'screens/signup.dart';
 import 'screens/home.dart';
 import 'screens/chatbot.dart';
-import 'screens/image.dart';
+import 'screens/image_recognition.dart';
 import 'screens/courses.dart';
 import 'screens/notifications.dart';
 import 'screens/profile.dart';
+
 
 void main() {
   runApp(const OstomyApp());

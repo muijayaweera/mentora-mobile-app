@@ -11,15 +11,13 @@ class ImageRecognitionScreen extends StatefulWidget {
 
 class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
   File? _image;
-  final ImagePicker _picker = ImagePicker();
-  String? _resultText;
+  final picker = ImagePicker();
 
-  Future<void> _pickImage(ImageSource source) async {
-    final pickedFile = await _picker.pickImage(source: source);
+  Future<void> _getImage(ImageSource source) async {
+    final pickedFile = await picker.pickImage(source: source);
     if (pickedFile != null) {
       setState(() {
         _image = File(pickedFile.path);
-        _resultText = null; // reset result when new image is chosen
       });
     }
   }
@@ -31,32 +29,28 @@ class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
         title: const Text("Image Recognition"),
         backgroundColor: Colors.teal,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _image == null
-                ? const Icon(Icons.image, size: 120, color: Colors.grey)
-                : Image.file(_image!, height: 200),
+                ? const Text(
+              'No image selected',
+              style: TextStyle(fontSize: 16),
+            )
+                : Image.file(_image!, height: 250),
             const SizedBox(height: 20),
             ElevatedButton.icon(
-              onPressed: () => _pickImage(ImageSource.gallery),
-              icon: const Icon(Icons.photo_library),
-              label: const Text("Pick from Gallery"),
+              onPressed: () => _getImage(ImageSource.gallery),
+              icon: const Icon(Icons.photo),
+              label: const Text('Pick from Gallery'),
             ),
             const SizedBox(height: 10),
             ElevatedButton.icon(
-              onPressed: () => _pickImage(ImageSource.camera),
+              onPressed: () => _getImage(ImageSource.camera),
               icon: const Icon(Icons.camera_alt),
-              label: const Text("Take a Photo"),
+              label: const Text('Take a Photo'),
             ),
-            const SizedBox(height: 20),
-            if (_resultText != null)
-              Text(
-                _resultText!,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
           ],
         ),
       ),
