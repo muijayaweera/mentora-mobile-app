@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class ImageRecognitionScreen extends StatelessWidget {
-  const ImageRecognitionScreen({super.key});
+class ImageScreen extends StatelessWidget {
+  const ImageScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -65,12 +65,18 @@ class ImageRecognitionScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.add_photo_alternate_outlined,
-                      color: Colors.white54, size: 50),
+                  const Icon(
+                    Icons.add_photo_alternate_outlined,
+                    color: Colors.white54,
+                    size: 50,
+                  ),
                   const SizedBox(height: 10),
                   Text(
                     "Upload Image",
-                    style: GoogleFonts.poppins(color: Colors.white70),
+                    style: GoogleFonts.poppins(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),
@@ -120,8 +126,8 @@ class ImageRecognitionScreen extends StatelessWidget {
 
             // Analyze Button
             Container(
-              width: 140,
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              width: 160,
+              padding: const EdgeInsets.symmetric(vertical: 15),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30),
                 gradient: const LinearGradient(

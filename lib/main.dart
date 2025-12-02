@@ -4,6 +4,7 @@ import 'screens/login.dart';
 import 'screens/signup.dart';
 import 'screens/home.dart';
 import 'screens/chatbot.dart';
+import 'screens/image.dart';
 import 'screens/image_recognition.dart';
 import 'screens/courses.dart';
 import 'screens/notifications.dart';
@@ -33,7 +34,7 @@ class OstomyApp extends StatelessWidget {
         '/signup': (context) => const SignupScreen(),
         '/home': (context) => const HomeScreen(),
         '/chatbot': (context) => const ChatbotScreen(),
-        '/image': (context) => const ImageRecognitionScreen(),
+        '/image': (context) => const ImageScreen(),
         '/courses': (context) => const CoursesScreen(),
         '/notifications': (context) => const NotificationsScreen(),
         '/profile': (context) => const ProfileScreen(),
