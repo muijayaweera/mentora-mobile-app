@@ -1,8 +1,42 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
-class ImageScreen extends StatelessWidget {
+class ImageScreen extends StatefulWidget {
   const ImageScreen({super.key});
+
+  @override
+  State<ImageScreen> createState() => _ImageScreenState();
+}
+
+class _ImageScreenState extends State<ImageScreen> {
+  // Image variables
+  File? _selectedImageFile;
+  Uint8List? _selectedImageWeb;
+  final ImagePicker _picker = ImagePicker();
+
+  // Pick image
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      if (kIsWeb) {
+        final bytes = await pickedFile.readAsBytes();
+        setState(() {
+          _selectedImageWeb = bytes;
+          _selectedImageFile = null;
+        });
+      } else {
+        setState(() {
+          _selectedImageFile = File(pickedFile.path);
+          _selectedImageWeb = null;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,11 +47,12 @@ class ImageScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Previous Chats Button
+            // Previous chats button
             Align(
               alignment: Alignment.topLeft,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.white12,
                   borderRadius: BorderRadius.circular(20),
@@ -34,7 +69,7 @@ class ImageScreen extends StatelessWidget {
 
             const SizedBox(height: 40),
 
-            // Gradient Title
+            // Gradient "mentora."
             ShaderMask(
               shaderCallback: (Rect bounds) {
                 return const LinearGradient(
@@ -50,43 +85,53 @@ class ImageScreen extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 40),
 
-            // Upload Image Card
-            Container(
-              height: 180,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white10,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white30),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.add_photo_alternate_outlined,
-                    color: Colors.white54,
-                    size: 50,
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    "Upload Image",
-                    style: GoogleFonts.poppins(
-                      color: Colors.white70,
-                      fontSize: 14,
+            // UPLOAD IMAGE (with selected preview)
+            GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                height: 160,
+                width: MediaQuery.of(context).size.width * 0.75,
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white30),
+                ),
+                child: (_selectedImageFile == null &&
+                    _selectedImageWeb == null)
+                    ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.add_photo_alternate_outlined,
+                        color: Colors.white54, size: 45),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Upload Image",
+                      style: GoogleFonts.poppins(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                )
+                    : ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: kIsWeb
+                      ? Image.memory(_selectedImageWeb!,
+                      fit: BoxFit.cover)
+                      : Image.file(_selectedImageFile!,
+                      fit: BoxFit.cover),
+                ),
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 22),
 
-            // Add Context Input
+            // Add Context Input (thinner)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+              height: 42,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.white10,
                 borderRadius: BorderRadius.circular(30),
@@ -107,7 +152,7 @@ class ImageScreen extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(8),
                     decoration: const BoxDecoration(
                       color: Color(0xFFA822D9),
                       shape: BoxShape.circle,
@@ -115,19 +160,19 @@ class ImageScreen extends StatelessWidget {
                     child: const Icon(
                       Icons.send,
                       color: Colors.white,
-                      size: 18,
+                      size: 16,
                     ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 22),
 
-            // Analyze Button
+            // Analyze Button (thinner)
             Container(
-              width: 160,
-              padding: const EdgeInsets.symmetric(vertical: 15),
+              width: 130,
+              height: 42,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30),
                 gradient: const LinearGradient(
@@ -140,7 +185,6 @@ class ImageScreen extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 15,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
