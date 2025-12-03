@@ -18,7 +18,7 @@ class _ImageScreenState extends State<ImageScreen> {
   Uint8List? _selectedImageWeb;
   final ImagePicker _picker = ImagePicker();
 
-  // Pick image
+  // Pick image from gallery
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
@@ -36,6 +36,14 @@ class _ImageScreenState extends State<ImageScreen> {
         });
       }
     }
+  }
+
+  // Clear selected image
+  void _clearImage() {
+    setState(() {
+      _selectedImageFile = null;
+      _selectedImageWeb = null;
+    });
   }
 
   @override
@@ -85,50 +93,88 @@ class _ImageScreenState extends State<ImageScreen> {
                 ),
               ),
             ),
+
             const SizedBox(height: 40),
 
-            // UPLOAD IMAGE (with selected preview)
-            GestureDetector(
-              onTap: _pickImage,
-              child: Container(
-                height: 160,
-                width: MediaQuery.of(context).size.width * 0.75,
-                decoration: BoxDecoration(
-                  color: Colors.white10,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white30),
-                ),
-                child: (_selectedImageFile == null &&
-                    _selectedImageWeb == null)
-                    ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.add_photo_alternate_outlined,
-                        color: Colors.white54, size: 45),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Upload Image",
-                      style: GoogleFonts.poppins(
-                        color: Colors.white70,
-                        fontSize: 14,
+            // =======================
+            //   UPLOAD IMAGE BOX
+            // =======================
+            Stack(
+              children: [
+                GestureDetector(
+                  onTap: _pickImage,
+                  child: Container(
+                    height: 160,
+                    width: MediaQuery.of(context).size.width * 0.75,
+                    decoration: BoxDecoration(
+                      color: Colors.white10,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white30),
+                    ),
+                    child: (_selectedImageFile == null &&
+                        _selectedImageWeb == null)
+                        ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.add_photo_alternate_outlined,
+                          color: Colors.white54,
+                          size: 45,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Upload Image",
+                          style: GoogleFonts.poppins(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    )
+                        : ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: kIsWeb
+                          ? Image.memory(
+                        _selectedImageWeb!,
+                        fit: BoxFit.cover,
+                      )
+                          : Image.file(
+                        _selectedImageFile!,
+                        fit: BoxFit.cover,
                       ),
                     ),
-                  ],
-                )
-                    : ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: kIsWeb
-                      ? Image.memory(_selectedImageWeb!,
-                      fit: BoxFit.cover)
-                      : Image.file(_selectedImageFile!,
-                      fit: BoxFit.cover),
+                  ),
                 ),
-              ),
+
+                // ❌ Cancel button
+                if (_selectedImageFile != null || _selectedImageWeb != null)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: _clearImage,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(4.0),
+                          child: Icon(
+                            Icons.close,
+                            size: 16,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
 
             const SizedBox(height: 22),
 
-            // Add Context Input (thinner)
+            // Add Context Input
             Container(
               height: 42,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -169,7 +215,7 @@ class _ImageScreenState extends State<ImageScreen> {
 
             const SizedBox(height: 22),
 
-            // Analyze Button (thinner)
+            // Analyze Button
             Container(
               width: 130,
               height: 42,
