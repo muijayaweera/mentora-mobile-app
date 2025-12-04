@@ -34,15 +34,39 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+
                     Row(
-                      children: const [
-                        Icon(Icons.notifications_none, color: Colors.white, size: 28),
-                        SizedBox(width: 12),
-                        Icon(Icons.person_outline, color: Colors.white, size: 28),
+                      children: [
+                        // NOTIFICATION ICON
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushNamed(context, '/notifications');
+                          },
+                          child: const Icon(
+                            Icons.notifications_none,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        // PROFILE ICON
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushNamed(context, '/profile');
+                          },
+                          child: const Icon(
+                            Icons.person_outline,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
                       ],
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 60),
                 // Purple Circle
                 Center(
