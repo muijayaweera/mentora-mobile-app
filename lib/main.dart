@@ -9,6 +9,8 @@ import 'screens/image_recognition.dart';
 import 'screens/courses.dart';
 import 'screens/notifications.dart';
 import 'screens/profile.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 
 
 
@@ -43,7 +45,6 @@ class _OstomyAppState extends State<OstomyApp> {
       const TextTheme(bodyMedium: TextStyle(color: Colors.white)),
     ),
   );
-
   bool isDarkMode = true;
 
   @override
@@ -51,10 +52,7 @@ class _OstomyAppState extends State<OstomyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Ostomy Trainer',
-      theme: ThemeData(
-        primarySwatch: Colors.teal,
-        scaffoldBackgroundColor: Colors.white,
-      ),
+      theme: isDarkMode ? darkTheme : lightTheme,
       initialRoute: '/intro',
       routes: {
         '/intro': (context) => const IntroScreen(),
@@ -69,4 +67,10 @@ class _OstomyAppState extends State<OstomyApp> {
       },
     );
   }
+  void toggleTheme() {
+    setState(() {
+      isDarkMode = !isDarkMode;
+    });
+  }
 }
+
