@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final VoidCallback toggleTheme;
+
+  const HomeScreen({super.key, required this.toggleTheme});
 
   @override
   Widget build(BuildContext context) {
@@ -37,33 +39,27 @@ class HomeScreen extends StatelessWidget {
 
                     Row(
                       children: [
-                        // NOTIFICATION ICON
                         GestureDetector(
                           onTap: () {
                             Navigator.pushNamed(context, '/notifications');
                           },
-                          child: const Icon(
-                            Icons.notifications_none,
-                            color: Colors.white,
-                            size: 28,
-                          ),
+                          child: const Icon(Icons.notifications_none, size: 28),
                         ),
-
                         const SizedBox(width: 12),
-
-                        // PROFILE ICON
+                        GestureDetector(
+                          onTap: toggleTheme,
+                          child: const Icon(Icons.brightness_6, size: 28),
+                        ),
+                        const SizedBox(width: 12),
                         GestureDetector(
                           onTap: () {
                             Navigator.pushNamed(context, '/profile');
                           },
-                          child: const Icon(
-                            Icons.person_outline,
-                            color: Colors.white,
-                            size: 28,
-                          ),
+                          child: const Icon(Icons.person_outline, size: 28),
                         ),
                       ],
                     ),
+
                   ],
                 ),
 

@@ -55,16 +55,17 @@ class _OstomyAppState extends State<OstomyApp> {
       theme: isDarkMode ? darkTheme : lightTheme,
       initialRoute: '/intro',
       routes: {
-        '/intro': (context) => const IntroScreen(),
+        '/intro': (context) => IntroScreen(toggleTheme: toggleTheme),
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
-        '/home': (context) => const HomeScreen(),
+        '/home': (context) => HomeScreen(toggleTheme: toggleTheme),
         '/chatbot': (context) => const ChatbotScreen(),
         '/image': (context) => const ImageScreen(),
         '/courses': (context) => const CoursesScreen(),
         '/notifications': (context) => const NotificationsScreen(),
         '/profile': (context) => const ProfileScreen(),
       },
+
     );
   }
   void toggleTheme() {

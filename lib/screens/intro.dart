@@ -3,7 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'home.dart';
 
 class IntroScreen extends StatelessWidget {
-  const IntroScreen({super.key});
+  final VoidCallback toggleTheme;
+
+  const IntroScreen({super.key, required this.toggleTheme});
+
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +77,9 @@ class IntroScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => const HomeScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => HomeScreen(toggleTheme: toggleTheme),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
