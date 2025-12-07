@@ -17,8 +17,34 @@ void main() {
   runApp(const OstomyApp());
 }
 
-class OstomyApp extends StatelessWidget {
+class OstomyApp extends StatefulWidget {
   const OstomyApp({super.key});
+
+  @override
+  State<OstomyApp> createState() => _OstomyAppState();
+}
+
+class _OstomyAppState extends State<OstomyApp> {
+  ThemeData lightTheme = ThemeData(
+    brightness: Brightness.light,
+    scaffoldBackgroundColor: Colors.white,
+    primarySwatch: Colors.teal,
+    iconTheme: const IconThemeData(color: Colors.black),
+    textTheme: GoogleFonts.poppinsTextTheme(
+      const TextTheme(bodyMedium: TextStyle(color: Colors.black)),
+    ),
+  );
+
+  ThemeData darkTheme = ThemeData(
+    brightness: Brightness.dark,
+    scaffoldBackgroundColor: const Color(0xFF1C1C1C),
+    iconTheme: const IconThemeData(color: Colors.white),
+    textTheme: GoogleFonts.poppinsTextTheme(
+      const TextTheme(bodyMedium: TextStyle(color: Colors.white)),
+    ),
+  );
+
+  bool isDarkMode = true;
 
   @override
   Widget build(BuildContext context) {
