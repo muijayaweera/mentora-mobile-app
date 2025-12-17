@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/course.dart';
+import 'lesson_screen.dart';
+
 
 class CourseOverviewScreen extends StatelessWidget {
   final Course course;
@@ -93,17 +95,23 @@ class CourseOverviewScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     backgroundColor: const Color(0xFFA822D9),
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
                   onPressed: () {
-                    Navigator.pushNamed(
+                    Navigator.push(
                       context,
-                      '/lesson',
-                      arguments: course.lessons.first,
+                      MaterialPageRoute(
+                        builder: (_) => LessonScreen(
+                          lesson: course.lessons.first,
+                          allLessons: course.lessons,
+                        ),
+                      ),
                     );
                   },
+
                   child: Text(
                     'Get Started',
                     style: GoogleFonts.poppins(
