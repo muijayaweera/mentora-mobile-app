@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../data/sample_courses.dart';
+import 'course_overview.dart';
+
 class CoursesScreen extends StatelessWidget {
   const CoursesScreen({super.key});
 
@@ -26,9 +29,10 @@ class CoursesScreen extends StatelessWidget {
                   child: Text(
                     "mentora.",
                     style: GoogleFonts.poppins(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white),
+                      fontSize: 28,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 const Icon(Icons.shield_outlined, color: Colors.white70),
@@ -48,9 +52,7 @@ class CoursesScreen extends StatelessWidget {
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: "Search",
-                  hintStyle: GoogleFonts.poppins(
-                    color: Colors.white54,
-                  ),
+                  hintStyle: GoogleFonts.poppins(color: Colors.white54),
                   border: InputBorder.none,
                 ),
               ),
@@ -64,9 +66,9 @@ class CoursesScreen extends StatelessWidget {
               style: GoogleFonts.poppins(color: Colors.white, fontSize: 16),
             ),
             const SizedBox(height: 12),
-            _courseTile(),
+            _courseTile(context),
             const SizedBox(height: 12),
-            _courseTile(),
+            _courseTile(context),
 
             const SizedBox(height: 25),
 
@@ -74,18 +76,21 @@ class CoursesScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("My Courses",
-                    style:
-                    GoogleFonts.poppins(color: Colors.white, fontSize: 16)),
-                Text("See All",
-                    style:
-                    GoogleFonts.poppins(color: Colors.white70, fontSize: 14)),
+                Text(
+                  "My Courses",
+                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 16),
+                ),
+                Text(
+                  "See All",
+                  style:
+                  GoogleFonts.poppins(color: Colors.white70, fontSize: 14),
+                ),
               ],
             ),
             const SizedBox(height: 12),
-            _courseTile(),
+            _courseTile(context),
             const SizedBox(height: 12),
-            _courseTile(),
+            _courseTile(context),
 
             const SizedBox(height: 25),
 
@@ -93,30 +98,55 @@ class CoursesScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("All Courses",
-                    style:
-                    GoogleFonts.poppins(color: Colors.white, fontSize: 16)),
-                Text("See All",
-                    style:
-                    GoogleFonts.poppins(color: Colors.white70, fontSize: 14)),
+                Text(
+                  "All Courses",
+                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 16),
+                ),
+                Text(
+                  "See All",
+                  style:
+                  GoogleFonts.poppins(color: Colors.white70, fontSize: 14),
+                ),
               ],
             ),
             const SizedBox(height: 12),
-            _courseTile(),
+            _courseTile(context),
             const SizedBox(height: 12),
-            _courseTile(),
+            _courseTile(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _courseTile() {
-    return Container(
-      height: 70,
-      decoration: BoxDecoration(
-        color: Colors.white12,
-        borderRadius: BorderRadius.circular(14),
+  // Course Tile Widget
+  Widget _courseTile(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                CourseOverviewScreen(course: sampleCourse),
+          ),
+        );
+      },
+      child: Container(
+        height: 70,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        alignment: Alignment.centerLeft,
+        decoration: BoxDecoration(
+          color: Colors.white12,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Text(
+          'Fundamentals of Ostomy Care',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
     );
   }
