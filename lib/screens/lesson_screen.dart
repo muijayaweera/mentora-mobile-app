@@ -37,6 +37,35 @@ class LessonScreen extends StatelessWidget {
                 ),
               ),
 
+              const SizedBox(height: 12),
+
+// Lesson progress text
+              Text(
+                'Lesson ${currentIndex + 1} of ${allLessons.length}',
+                style: GoogleFonts.poppins(
+                  color: Colors.white70,
+                  fontSize: 13,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Progress bar
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: LinearProgressIndicator(
+                  value: (currentIndex + 1) / allLessons.length,
+                  backgroundColor: Colors.white12,
+                  valueColor: const AlwaysStoppedAnimation(
+                    Color(0xFFA822D9),
+                  ),
+                  minHeight: 6,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+
               const SizedBox(height: 20),
 
               // Lesson content
