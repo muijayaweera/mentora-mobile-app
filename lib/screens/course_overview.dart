@@ -3,11 +3,17 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/course.dart';
 import 'lesson_screen.dart';
 
-
-class CourseOverviewScreen extends StatelessWidget {
+class CourseOverviewScreen extends StatefulWidget {
   final Course course;
 
   const CourseOverviewScreen({super.key, required this.course});
+
+  @override
+  State<CourseOverviewScreen> createState() => _CourseOverviewScreenState();
+}
+
+class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
+  bool courseCompleted = false;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +27,7 @@ class CourseOverviewScreen extends StatelessWidget {
             children: [
               // Title
               Text(
-                course.title,
+                widget.course.title,
                 style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontSize: 22,
@@ -42,7 +48,7 @@ class CourseOverviewScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                course.overview,
+                widget.course.overview,
                 style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontSize: 14,
@@ -64,9 +70,9 @@ class CourseOverviewScreen extends StatelessWidget {
 
               Expanded(
                 child: ListView.builder(
-                  itemCount: course.lessons.length,
+                  itemCount: widget.course.lessons.length,
                   itemBuilder: (context, index) {
-                    final lesson = course.lessons[index];
+                    final lesson = widget.course.lessons[index];
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Container(
@@ -88,7 +94,7 @@ class CourseOverviewScreen extends StatelessWidget {
                 ),
               ),
 
-              // Get Started Button
+              // Get Started / Continue Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -100,20 +106,24 @@ class CourseOverviewScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.push(
+                  onPressed: () async {
+                    final result = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => LessonScreen(
-                          lesson: course.lessons.first,
-                          allLessons: course.lessons,
-                        ),
+                          allLessons: widget.course.lessons,
+                        )
                       ),
                     );
-                  },
 
+                    if (result == true) {
+                      setState(() {
+                        courseCompleted = true;
+                      });
+                    }
+                  },
                   child: Text(
-                    'Get Started',
+                    courseCompleted ? 'Continue Learning' : 'Get Started',
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
