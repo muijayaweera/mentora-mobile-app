@@ -10,14 +10,19 @@ import 'screens/courses.dart';
 import 'screens/notifications.dart';
 import 'screens/profile.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 
 
-
-
-void main() {
-  runApp(const OstomyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Make sure Flutter is ready
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform, // uses firebase_options.dart
+  );
+  runApp(const OstomyApp()); // Start your app
 }
+
 
 class OstomyApp extends StatefulWidget {
   const OstomyApp({super.key});

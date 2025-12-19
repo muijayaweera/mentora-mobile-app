@@ -128,8 +128,10 @@ class _LessonScreenState extends State<LessonScreen> {
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(
                                   vertical: 14),
-                              side: const BorderSide(
-                                  color: Colors.white30),
+                                side: const BorderSide(
+                                  color: Color(0xFFA822D9),
+                                  width: 1.6,
+                                ),
                               shape: RoundedRectangleBorder(
                                 borderRadius:
                                 BorderRadius.circular(14),
@@ -155,6 +157,7 @@ class _LessonScreenState extends State<LessonScreen> {
                         flex: 6,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
                                 vertical: 14),
                             backgroundColor:
