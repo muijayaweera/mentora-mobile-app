@@ -1,172 +1,127 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
-
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  bool obscurePassword = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF2F2F2F),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              const SizedBox(height: 40),
-
-              const Text(
-                "mentora.",
-                style: TextStyle(
-                  color: Color(0xFFB026FF),
-                  fontSize: 32,
-                  fontWeight: FontWeight.w500,
-                ),
+      body: Stack(
+        children: [
+          // Background image
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/login.png'),
+                fit: BoxFit.cover,
               ),
-
-              const SizedBox(height: 30),
-
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Color(0xFFB026FF), width: 6),
-                ),
-              ),
-
-              const SizedBox(height: 40),
-
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF3A1C71), Color(0xFF7B2FF7)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Sign in to your account",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    _inputField(
-                      hint: "Enter your email",
-                      icon: Icons.email_outlined,
-                    ),
-
-                    const SizedBox(height: 15),
-
-                    _inputField(
-                      hint: "Enter your password",
-                      icon: Icons.lock_outline,
-                      obscure: obscurePassword,
-                      suffix: IconButton(
-                        icon: Icon(
-                          obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Colors.grey,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            obscurePassword = !obscurePassword;
-                          });
-                        },
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {},
-                        child: const Text(
-                          "Forgot Password?",
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFB026FF),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                        ),
-                        child: const Text(
-                          "Sign In",
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    Center(
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.pushNamed(context, '/signup');
-                        },
-                        child: const Text(
-                          "Don't have an account? Sign Up!",
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
-  }
 
-  Widget _inputField({
-    required String hint,
-    required IconData icon,
-    bool obscure = false,
-    Widget? suffix,
-  }) {
-    return TextField(
-      obscureText: obscure,
-      decoration: InputDecoration(
-        hintText: hint,
-        filled: true,
-        fillColor: Colors.white,
-        prefixIcon: Icon(icon),
-        suffixIcon: suffix,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(25),
-          borderSide: BorderSide.none,
-        ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                children: [
+                  const SizedBox(height: 40),
+
+                  // Logo text
+                  Text(
+                    'mentora.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFFA822D9),
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  // Circle
+                  Container(
+                    height: 90,
+                    width: 90,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFFA822D9),
+                        width: 5,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // Card
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(26),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Sign in to your account',
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          _inputField(
+                            icon: Icons.email_outlined,
+                            hint: 'Enter your email',
+                          ),
+                          const SizedBox(height: 16),
+
+                          _inputField(
+                            icon: Icons.lock_outline,
+                            hint: 'Enter your password',
+                            isPassword: true,
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              'Forgot Password?',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ),
+
+                          const Spacer(),
+
+                          _gradientButton(text: 'Sign In'),
+
+                          const SizedBox(height: 16),
+
+                          Text(
+                            "Don't have an account? Sign Up!",
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

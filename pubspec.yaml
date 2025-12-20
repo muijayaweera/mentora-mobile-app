@@ -69,6 +69,7 @@ flutter:
     - assets/chat_bg.png
     - assets/chatbg1.png
     - assets/chatbg2.png
+    - assets/login.png
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
