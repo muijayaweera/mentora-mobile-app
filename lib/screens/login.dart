@@ -126,3 +126,47 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
+Widget _inputField({
+  required IconData icon,
+  required String hint,
+  bool isPassword = false,
+}) {
+  return TextField(
+    obscureText: isPassword,
+    style: const TextStyle(color: Colors.black),
+    decoration: InputDecoration(
+      filled: true,
+      fillColor: Colors.white,
+      prefixIcon: Icon(icon, color: Colors.grey),
+      hintText: hint,
+      hintStyle: const TextStyle(fontSize: 13),
+      contentPadding: const EdgeInsets.symmetric(vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide.none,
+      ),
+    ),
+  );
+}
+
+Widget _gradientButton({required String text}) {
+  return Container(
+    width: double.infinity,
+    height: 48,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(14),
+      gradient: const LinearGradient(
+        colors: [Color(0xFFC514C2), Color(0xFFA822D9)],
+      ),
+    ),
+    child: Center(
+      child: Text(
+        text,
+        style: GoogleFonts.poppins(
+          color: Colors.white,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    ),
+  );
+}
