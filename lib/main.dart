@@ -58,7 +58,7 @@ class _OstomyAppState extends State<OstomyApp> {
       debugShowCheckedModeBanner: false,
       title: 'Ostomy Trainer',
       theme: isDarkMode ? darkTheme : lightTheme,
-      initialRoute: '/login',
+      initialRoute: '/signup',
       routes: {
         '/intro': (context) => IntroScreen(toggleTheme: toggleTheme),
         '/login': (context) => const LoginScreen(),

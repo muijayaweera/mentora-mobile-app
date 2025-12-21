@@ -8,14 +8,14 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgDark,
+      backgroundColor: const Color(0xFF1C1C1C),
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 40),
+            const SizedBox(height: 44),
 
             // =========================
-            // TITLE (MATCHES INTRO)
+            // TITLE
             // =========================
             ShaderMask(
               shaderCallback: (bounds) => const LinearGradient(
@@ -33,10 +33,10 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 40),
+            const SizedBox(height: 44),
 
             // =========================
-            // CIRCLE (MATCHES INTRO)
+            // CIRCLE
             // =========================
             Container(
               height: 120,
@@ -50,10 +50,8 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 40),
-
-            // Push bottom section slightly lower
-            const SizedBox(height: 10),
+            // 👇 pushes bottom section LOWER
+            const SizedBox(height: 60),
 
             // =========================
             // BOTTOM IMAGE SECTION
@@ -61,23 +59,19 @@ class LoginScreen extends StatelessWidget {
             Expanded(
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(32),
+                  top: Radius.circular(36),
                 ),
                 child: Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
                     image: DecorationImage(
-                      image: AssetImage('assets/signin.png'),
+                      image: AssetImage('assets/loginn.png'),
                       fit: BoxFit.cover,
                     ),
                   ),
 
-                  // Overlay
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 24,
-                    ),
+                    padding: const EdgeInsets.fromLTRB(20, 26, 20, 24),
                     color: Colors.black.withOpacity(0.35),
 
                     child: Column(
@@ -86,76 +80,97 @@ class LoginScreen extends StatelessWidget {
                         // =========================
                         // HEADING
                         // =========================
-                        Text(
-                          'Sign in to your account',
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
+                        Center(
+                          child: Text(
+                            'Sign in to your account',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
 
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 26),
 
-                        _inputField(
-                          icon: Icons.email_outlined,
-                          hint: 'Enter your email',
-                        ),
-
-                        const SizedBox(height: 14),
-
-                        _inputField(
-                          icon: Icons.lock_outline,
-                          hint: 'Enter your password',
-                          isPassword: true,
-                        ),
-
-                        const SizedBox(height: 6),
-
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            'Forgot Password?',
-                            style: GoogleFonts.poppins(
-                              color: Colors.white.withOpacity(0.9),
-                              fontSize: 13,
+                        // =========================
+                        // INPUTS (NARROWER)
+                        // =========================
+                        Center(
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.85,
+                            child: _inputField(
+                              icon: Icons.email_outlined,
+                              hint: 'Enter your email',
                             ),
                           ),
                         ),
 
                         const SizedBox(height: 22),
 
-                        // =========================
-                        // SIGN IN BUTTON
-                        // =========================
-                        Container(
-                          height: 46,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            gradient: buttonGradient,
-                            borderRadius:
-                            BorderRadius.circular(buttonRadius),
+                        Center(
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.85,
+                            child: _inputField(
+                              icon: Icons.lock_outline,
+                              hint: 'Enter your password',
+                              isPassword: true,
+                            ),
                           ),
-                          child: Center(
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 24),
                             child: Text(
-                              'Sign In',
+                              'Forgot Password?',
                               style: GoogleFonts.poppins(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 12,
                               ),
                             ),
                           ),
                         ),
 
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 28),
+
+                        // =========================
+                        // SIGN IN BUTTON (MATCH WIDTH)
+                        // =========================
+                        Center(
+                          child: Container(
+                            height: 44,
+                            width:
+                            MediaQuery.of(context).size.width * 0.85,
+                            decoration: BoxDecoration(
+                              gradient: buttonGradient,
+                              borderRadius:
+                              BorderRadius.circular(buttonRadius),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Sign In',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white,
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
 
                         Center(
                           child: Text(
                             "Don't have an account? Sign Up!",
                             style: GoogleFonts.poppins(
                               color: Colors.white.withOpacity(0.9),
-                              fontSize: 13,
+                              fontSize: 12.5,
                             ),
                           ),
                         ),
@@ -172,7 +187,7 @@ class LoginScreen extends StatelessWidget {
   }
 
   // =========================
-  // INPUT FIELD WIDGET
+  // INPUT FIELD
   // =========================
   Widget _inputField({
     required IconData icon,
@@ -181,11 +196,15 @@ class LoginScreen extends StatelessWidget {
   }) {
     return TextField(
       obscureText: isPassword,
+      style: GoogleFonts.poppins(
+        fontSize: 13, // 👈 smaller text
+      ),
       decoration: InputDecoration(
-        prefixIcon: Icon(icon),
+        prefixIcon: Icon(icon, size: 20),
         suffixIcon:
-        isPassword ? const Icon(Icons.visibility_off) : null,
+        isPassword ? const Icon(Icons.visibility_off, size: 18) : null,
         hintText: hint,
+        hintStyle: GoogleFonts.poppins(fontSize: 13),
         filled: true,
         fillColor: Colors.white,
         contentPadding:

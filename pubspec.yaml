@@ -71,6 +71,7 @@ flutter:
     - assets/chatbg2.png
     - assets/signin.png
     - assets/signup.png
+    - assets/loginn.png
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
