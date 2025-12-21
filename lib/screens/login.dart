@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../constants/ui_constants.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -11,25 +12,35 @@ class LoginScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // =========================
-            // TOP SECTION (BLACK ONLY)
-            // =========================
             const SizedBox(height: 40),
 
-            const Text(
-              'mentora.',
-              style: TextStyle(
-                color: purple,
-                fontSize: 28,
-                fontWeight: FontWeight.w500,
+            // =========================
+            // TITLE (MATCHES INTRO)
+            // =========================
+            ShaderMask(
+              shaderCallback: (bounds) => const LinearGradient(
+                colors: [Color(0xFFC514C2), Color(0xFFA822D9)],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ).createShader(bounds),
+              child: Text(
+                'mentora.',
+                style: GoogleFonts.poppins(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 40),
 
+            // =========================
+            // CIRCLE (MATCHES INTRO)
+            // =========================
             Container(
-              height: 90,
-              width: 90,
+              height: 120,
+              width: 120,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -39,10 +50,13 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 40),
+
+            // Push bottom section slightly lower
+            const SizedBox(height: 10),
 
             // =========================
-            // BOTTOM SECTION (IMAGE ONLY)
+            // BOTTOM IMAGE SECTION
             // =========================
             Expanded(
               child: ClipRRect(
@@ -58,7 +72,7 @@ class LoginScreen extends StatelessWidget {
                     ),
                   ),
 
-                  // Dark overlay + content
+                  // Overlay
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -69,16 +83,19 @@ class LoginScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        // =========================
+                        // HEADING
+                        // =========================
+                        Text(
                           'Sign in to your account',
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
 
                         _inputField(
                           icon: Icons.email_outlined,
@@ -99,28 +116,32 @@ class LoginScreen extends StatelessWidget {
                           alignment: Alignment.centerRight,
                           child: Text(
                             'Forgot Password?',
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               color: Colors.white.withOpacity(0.9),
+                              fontSize: 13,
                             ),
                           ),
                         ),
 
                         const SizedBox(height: 22),
 
+                        // =========================
+                        // SIGN IN BUTTON
+                        // =========================
                         Container(
-                          height: 48,
+                          height: 46,
                           width: double.infinity,
                           decoration: BoxDecoration(
                             gradient: buttonGradient,
                             borderRadius:
                             BorderRadius.circular(buttonRadius),
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Text(
                               'Sign In',
-                              style: TextStyle(
+                              style: GoogleFonts.poppins(
                                 color: Colors.white,
-                                fontSize: 16,
+                                fontSize: 15,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -132,8 +153,9 @@ class LoginScreen extends StatelessWidget {
                         Center(
                           child: Text(
                             "Don't have an account? Sign Up!",
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               color: Colors.white.withOpacity(0.9),
+                              fontSize: 13,
                             ),
                           ),
                         ),
@@ -149,6 +171,9 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
+  // =========================
+  // INPUT FIELD WIDGET
+  // =========================
   Widget _inputField({
     required IconData icon,
     required String hint,
@@ -164,7 +189,7 @@ class LoginScreen extends StatelessWidget {
         filled: true,
         fillColor: Colors.white,
         contentPadding:
-        const EdgeInsets.symmetric(vertical: 14),
+        const EdgeInsets.symmetric(vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(inputRadius),
           borderSide: BorderSide.none,
