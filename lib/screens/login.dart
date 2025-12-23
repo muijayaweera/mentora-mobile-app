@@ -1,9 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../constants/ui_constants.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  bool isLoading = false;
+  bool showPassword = false;
+
+  Future<void> login() async {
+    try {
+      setState(() => isLoading = true);
+
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      Navigator.pushReplacementNamed(context, '/home');
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Login failed')),
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,9 +45,6 @@ class LoginScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 44),
 
-            // =========================
-            // TITLE
-            // =========================
             ShaderMask(
               shaderCallback: (bounds) => const LinearGradient(
                 colors: [Color(0xFFC514C2), Color(0xFFA822D9)],
@@ -35,9 +63,6 @@ class LoginScreen extends StatelessWidget {
 
             const SizedBox(height: 44),
 
-            // =========================
-            // CIRCLE
-            // =========================
             Container(
               height: 120,
               width: 120,
@@ -50,12 +75,8 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
 
-            // 👇 pushes bottom section LOWER
             const SizedBox(height: 60),
 
-            // =========================
-            // BOTTOM IMAGE SECTION
-            // =========================
             Expanded(
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(
@@ -69,17 +90,12 @@ class LoginScreen extends StatelessWidget {
                       fit: BoxFit.cover,
                     ),
                   ),
-
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(20, 26, 20, 24),
                     color: Colors.black.withOpacity(0.35),
-
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // =========================
-                        // HEADING
-                        // =========================
                         Center(
                           child: Text(
                             'Sign in to your account',
@@ -93,13 +109,11 @@ class LoginScreen extends StatelessWidget {
 
                         const SizedBox(height: 26),
 
-                        // =========================
-                        // INPUTS (NARROWER)
-                        // =========================
                         Center(
                           child: SizedBox(
                             width: MediaQuery.of(context).size.width * 0.85,
                             child: _inputField(
+                              controller: emailController,
                               icon: Icons.email_outlined,
                               hint: 'Enter your email',
                             ),
@@ -112,9 +126,14 @@ class LoginScreen extends StatelessWidget {
                           child: SizedBox(
                             width: MediaQuery.of(context).size.width * 0.85,
                             child: _inputField(
+                              controller: passwordController,
                               icon: Icons.lock_outline,
                               hint: 'Enter your password',
                               isPassword: true,
+                              showText: showPassword,
+                              toggleShowText: () {
+                                setState(() => showPassword = !showPassword);
+                              },
                             ),
                           ),
                         ),
@@ -137,14 +156,9 @@ class LoginScreen extends StatelessWidget {
 
                         const SizedBox(height: 28),
 
-                        // =========================
-                        // SIGN IN BUTTON (MATCH WIDTH)
-                        // =========================
                         Center(
                           child: GestureDetector(
-                            onTap: () {
-                              Navigator.pushReplacementNamed(context, '/home');
-                            },
+                            onTap: login,
                             child: Container(
                               height: 44,
                               width: MediaQuery.of(context).size.width * 0.85,
@@ -153,7 +167,9 @@ class LoginScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(buttonRadius),
                               ),
                               child: Center(
-                                child: Text(
+                                child: isLoading
+                                    ? const CircularProgressIndicator(color: Colors.white)
+                                    : Text(
                                   'Sign In',
                                   style: GoogleFonts.poppins(
                                     color: Colors.white,
@@ -166,31 +182,20 @@ class LoginScreen extends StatelessWidget {
                           ),
                         ),
 
-
-
                         const SizedBox(height: 20),
 
                         GestureDetector(
-                          onTap: () {
-                            Navigator.pushNamed(context, '/signup');
-                          },
+                          onTap: () => Navigator.pushNamed(context, '/signup'),
                           child: Center(
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.pushNamed(context, '/signup');
-                              },
-                              child: Text(
-                                "Don't have an account? Sign Up!",
-                                style: GoogleFonts.poppins(
-                                  color: Colors.white.withOpacity(0.9),
-                                  fontSize: 12.5,
-                                ),
+                            child: Text(
+                              "Don't have an account? Sign Up!",
+                              style: GoogleFonts.poppins(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 12.5,
                               ),
                             ),
                           ),
-
                         ),
-
                       ],
                     ),
                   ),
@@ -203,29 +208,31 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  // =========================
-  // INPUT FIELD
-  // =========================
   Widget _inputField({
+    required TextEditingController controller,
     required IconData icon,
     required String hint,
     bool isPassword = false,
+    bool showText = false,
+    VoidCallback? toggleShowText,
   }) {
     return TextField(
-      obscureText: isPassword,
-      style: GoogleFonts.poppins(
-        fontSize: 13, // 👈 smaller text
-      ),
+      controller: controller,
+      obscureText: isPassword && !showText,
+      style: GoogleFonts.poppins(fontSize: 13),
       decoration: InputDecoration(
         prefixIcon: Icon(icon, size: 20),
-        suffixIcon:
-        isPassword ? const Icon(Icons.visibility_off, size: 18) : null,
+        suffixIcon: isPassword
+            ? GestureDetector(
+          onTap: toggleShowText,
+          child: Icon(showText ? Icons.visibility : Icons.visibility_off, size: 18),
+        )
+            : null,
         hintText: hint,
         hintStyle: GoogleFonts.poppins(fontSize: 13),
         filled: true,
         fillColor: Colors.white,
-        contentPadding:
-        const EdgeInsets.symmetric(vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(inputRadius),
           borderSide: BorderSide.none,

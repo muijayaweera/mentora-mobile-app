@@ -16,8 +16,9 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
 
-
   bool isLoading = false;
+  bool showPassword = false;
+  bool showConfirmPassword = false;
 
   Future<void> signup() async {
     try {
@@ -28,7 +29,11 @@ class _SignupScreenState extends State<SignupScreen> {
         password: passwordController.text.trim(),
       );
 
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, '/login');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Signup successful! Please login.")),
+      );
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.message ?? 'Signup failed')),
@@ -124,6 +129,10 @@ class _SignupScreenState extends State<SignupScreen> {
                           icon: Icons.lock_outline,
                           hint: 'Password',
                           isPassword: true,
+                          showText: showPassword,
+                          toggleShowText: () {
+                            setState(() => showPassword = !showPassword);
+                          },
                         ),
 
                         const SizedBox(height: 20),
@@ -133,19 +142,24 @@ class _SignupScreenState extends State<SignupScreen> {
                           icon: Icons.lock_outline,
                           hint: 'Confirm password',
                           isPassword: true,
+                          showText: showConfirmPassword,
+                          toggleShowText: () {
+                            setState(() => showConfirmPassword = !showConfirmPassword);
+                          },
                         ),
-
 
                         const SizedBox(height: 28),
 
-
-                    GestureDetector(
-                      onTap: () {
-                        // 🔐 LATER: Firebase signup will go here
-
-                        // ✅ AFTER successful signup → go to login
-                        Navigator.pushReplacementNamed(context, '/login');
-                      },
+                        GestureDetector(
+                          onTap: () {
+                            if (passwordController.text != confirmPasswordController.text) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Passwords don't match")),
+                              );
+                              return;
+                            }
+                            signup();
+                          },
                           child: Container(
                             height: 46,
                             width: double.infinity,
@@ -197,14 +211,23 @@ class _SignupScreenState extends State<SignupScreen> {
     required IconData icon,
     required String hint,
     bool isPassword = false,
+    bool showText = false,
+    VoidCallback? toggleShowText,
   }) {
     return TextField(
       controller: controller,
-      obscureText: isPassword,
+      obscureText: isPassword && !showText,
       style: GoogleFonts.poppins(fontSize: 13),
       decoration: InputDecoration(
         prefixIcon: Icon(icon, size: 20),
+        suffixIcon: isPassword
+            ? GestureDetector(
+          onTap: toggleShowText,
+          child: Icon(showText ? Icons.visibility : Icons.visibility_off, size: 18),
+        )
+            : null,
         hintText: hint,
+        hintStyle: GoogleFonts.poppins(fontSize: 13),
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(
