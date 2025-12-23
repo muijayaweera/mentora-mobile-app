@@ -140,27 +140,26 @@ class LoginScreen extends StatelessWidget {
                         // =========================
                         // SIGN IN BUTTON (MATCH WIDTH)
                         // =========================
-                        GestureDetector(
-                          onTap: () {
-                            // 🔐 LATER: Firebase login will go here
-
-                            // ✅ AFTER successful login → go to home
-                            Navigator.pushReplacementNamed(context, '/home');
-                          },
-                          child: Container(
-                            height: 44,
-                            width: MediaQuery.of(context).size.width * 0.85,
-                            decoration: BoxDecoration(
-                              gradient: buttonGradient,
-                              borderRadius: BorderRadius.circular(buttonRadius),
-                            ),
-                            child: Center(
-                              child: Text(
-                                'Sign In',
-                                style: GoogleFonts.poppins(
-                                  color: Colors.white,
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.w600,
+                        Center(
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.pushReplacementNamed(context, '/home');
+                            },
+                            child: Container(
+                              height: 44,
+                              width: MediaQuery.of(context).size.width * 0.85,
+                              decoration: BoxDecoration(
+                                gradient: buttonGradient,
+                                borderRadius: BorderRadius.circular(buttonRadius),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'Sign In',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ),
@@ -168,9 +167,13 @@ class LoginScreen extends StatelessWidget {
                         ),
 
 
+
                         const SizedBox(height: 20),
 
-                        Center(
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushNamed(context, '/signup');
+                          },
                           child: Text(
                             "Don't have an account? Sign Up!",
                             style: GoogleFonts.poppins(
@@ -179,6 +182,7 @@ class LoginScreen extends StatelessWidget {
                             ),
                           ),
                         ),
+
                       ],
                     ),
                   ),
