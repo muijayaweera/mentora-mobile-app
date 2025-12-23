@@ -174,13 +174,21 @@ class LoginScreen extends StatelessWidget {
                           onTap: () {
                             Navigator.pushNamed(context, '/signup');
                           },
-                          child: Text(
-                            "Don't have an account? Sign Up!",
-                            style: GoogleFonts.poppins(
-                              color: Colors.white.withOpacity(0.9),
-                              fontSize: 12.5,
+                          child: Center(
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.pushNamed(context, '/signup');
+                              },
+                              child: Text(
+                                "Don't have an account? Sign Up!",
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontSize: 12.5,
+                                ),
+                              ),
                             ),
                           ),
+
                         ),
 
                       ],

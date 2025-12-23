@@ -14,6 +14,8 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
+
 
   bool isLoading = false;
 
@@ -124,7 +126,18 @@ class _SignupScreenState extends State<SignupScreen> {
                           isPassword: true,
                         ),
 
+                        const SizedBox(height: 20),
+
+                        _inputField(
+                          controller: confirmPasswordController,
+                          icon: Icons.lock_outline,
+                          hint: 'Confirm password',
+                          isPassword: true,
+                        ),
+
+
                         const SizedBox(height: 28),
+
 
                     GestureDetector(
                       onTap: () {
