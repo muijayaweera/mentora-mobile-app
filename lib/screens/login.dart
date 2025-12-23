@@ -140,15 +140,19 @@ class LoginScreen extends StatelessWidget {
                         // =========================
                         // SIGN IN BUTTON (MATCH WIDTH)
                         // =========================
-                        Center(
+                        GestureDetector(
+                          onTap: () {
+                            // 🔐 LATER: Firebase login will go here
+
+                            // ✅ AFTER successful login → go to home
+                            Navigator.pushReplacementNamed(context, '/home');
+                          },
                           child: Container(
                             height: 44,
-                            width:
-                            MediaQuery.of(context).size.width * 0.85,
+                            width: MediaQuery.of(context).size.width * 0.85,
                             decoration: BoxDecoration(
                               gradient: buttonGradient,
-                              borderRadius:
-                              BorderRadius.circular(buttonRadius),
+                              borderRadius: BorderRadius.circular(buttonRadius),
                             ),
                             child: Center(
                               child: Text(
@@ -162,6 +166,7 @@ class LoginScreen extends StatelessWidget {
                             ),
                           ),
                         ),
+
 
                         const SizedBox(height: 20),
 
