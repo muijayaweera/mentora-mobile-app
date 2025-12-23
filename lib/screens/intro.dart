@@ -7,7 +7,6 @@ class IntroScreen extends StatelessWidget {
 
   const IntroScreen({super.key, required this.toggleTheme});
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,6 +18,7 @@ class IntroScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(),
+
               // Welcome Text
               Column(
                 children: [
@@ -48,7 +48,9 @@ class IntroScreen extends StatelessWidget {
                   ),
                 ],
               ),
+
               const SizedBox(height: 50),
+
               // Circle Placeholder
               Container(
                 height: 120,
@@ -61,7 +63,9 @@ class IntroScreen extends StatelessWidget {
                   ),
                 ),
               ),
+
               const SizedBox(height: 50),
+
               Text(
                 'Smarter learning starts here.',
                 style: GoogleFonts.poppins(
@@ -69,7 +73,9 @@ class IntroScreen extends StatelessWidget {
                   color: Colors.white70,
                 ),
               ),
+
               const Spacer(),
+
               // Get Started Button
               SizedBox(
                 width: double.infinity,
@@ -78,7 +84,7 @@ class IntroScreen extends StatelessWidget {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => HomeScreen(toggleTheme: toggleTheme),
+                        builder: (context) => HomeScreen(toggleTheme: toggleTheme, isDarkMode: true), // default dark mode
                       ),
                     );
                   },
@@ -99,6 +105,7 @@ class IntroScreen extends StatelessWidget {
                   ),
                 ),
               ),
+
               const SizedBox(height: 40),
             ],
           ),

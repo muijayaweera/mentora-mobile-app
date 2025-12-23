@@ -13,8 +13,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
-
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Make sure Flutter is ready
   await Firebase.initializeApp(
@@ -22,7 +20,6 @@ void main() async {
   );
   runApp(const OstomyApp()); // Start your app
 }
-
 
 class OstomyApp extends StatefulWidget {
   const OstomyApp({super.key});
@@ -32,15 +29,29 @@ class OstomyApp extends StatefulWidget {
 }
 
 class _OstomyAppState extends State<OstomyApp> {
+  bool isDarkMode = true;
+
+  void toggleTheme() {
+    setState(() {
+      isDarkMode = !isDarkMode;
+    });
+  }
+
+  // Define your themes
   ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
-    scaffoldBackgroundColor: Colors.white,
+    scaffoldBackgroundColor: const Color(0xFFF5F4F4),
     primarySwatch: Colors.teal,
-    iconTheme: const IconThemeData(color: Colors.black),
+    iconTheme: const IconThemeData(color: Color(0xFF676666)),
     textTheme: GoogleFonts.poppinsTextTheme(
-      const TextTheme(bodyMedium: TextStyle(color: Colors.black)),
+      const TextTheme(
+        bodyMedium: TextStyle(color: Color(0xFF4A4949)), // <- updated
+        bodySmall: TextStyle(color: Color(0xFF4A4949)),
+        bodyLarge: TextStyle(color: Color(0xFF4A4949)),
+      ),
     ),
   );
+
 
   ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
@@ -50,33 +61,30 @@ class _OstomyAppState extends State<OstomyApp> {
       const TextTheme(bodyMedium: TextStyle(color: Colors.white)),
     ),
   );
-  bool isDarkMode = true;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Ostomy Trainer',
-      theme: isDarkMode ? darkTheme : lightTheme,
+      theme: lightTheme,
+      darkTheme: darkTheme,
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
       initialRoute: '/login',
       routes: {
         '/intro': (context) => IntroScreen(toggleTheme: toggleTheme),
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
-        '/home': (context) => HomeScreen(toggleTheme: toggleTheme),
+        '/home': (context) => HomeScreen(
+          toggleTheme: toggleTheme,
+          isDarkMode: isDarkMode, // pass current theme to HomeScreen
+        ),
         '/chatbot': (context) => const ChatbotScreen(),
         '/image': (context) => const ImageScreen(),
         '/courses': (context) => const CoursesScreen(),
         '/notifications': (context) => const NotificationsScreen(),
         '/profile': (context) => const ProfileScreen(),
       },
-
     );
   }
-  void toggleTheme() {
-    setState(() {
-      isDarkMode = !isDarkMode;
-    });
-  }
 }
-
