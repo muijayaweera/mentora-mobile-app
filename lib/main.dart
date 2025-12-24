@@ -12,6 +12,8 @@ import 'screens/profile.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'screens/auth_gate.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Make sure Flutter is ready
@@ -67,17 +69,19 @@ class _OstomyAppState extends State<OstomyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Ostomy Trainer',
-      theme: lightTheme,
-      darkTheme: darkTheme,
-      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      initialRoute: '/login',
+      theme: isDarkMode ? darkTheme : lightTheme,
+
+      home: AuthGate(
+        toggleTheme: toggleTheme,
+        isDarkMode: isDarkMode,
+      ),
+
       routes: {
-        '/intro': (context) => IntroScreen(toggleTheme: toggleTheme),
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
         '/home': (context) => HomeScreen(
           toggleTheme: toggleTheme,
-          isDarkMode: isDarkMode, // pass current theme to HomeScreen
+          isDarkMode: isDarkMode,
         ),
         '/chatbot': (context) => const ChatbotScreen(),
         '/image': (context) => const ImageScreen(),

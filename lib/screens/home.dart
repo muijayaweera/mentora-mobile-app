@@ -9,14 +9,15 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Colors based on theme
-    final bgColor = isDarkMode ? const Color(0xFF1C1C1C) : const Color(0xFFF5F4F4);
-    final boxColor = isDarkMode ? const Color(0xFF2B2B2B) : const Color(0xFFFFFFFF);
-    final textColor = isDarkMode ? Colors.white : const Color(0xFFA4A3A3);
+    // Colors that adapt to theme
+    final backgroundColor = Theme.of(context).scaffoldBackgroundColor;
+    final boxColor = isDarkMode ? const Color(0xFF2B2B2B) : Colors.white;
+    final textColor = isDarkMode ? Colors.white : const Color(0xFF4A4949);
+    final subTextColor = isDarkMode ? Colors.white70 : const Color(0xFFA4A3A3);
     final iconColor = isDarkMode ? Colors.white : const Color(0xFF676666);
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -28,6 +29,7 @@ class HomeScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    // Gradient title stays same
                     ShaderMask(
                       shaderCallback: (bounds) => const LinearGradient(
                         colors: [Color(0xFFC514C2), Color(0xFFA822D9)],
@@ -37,17 +39,18 @@ class HomeScreen extends StatelessWidget {
                       child: Text(
                         'mentora.',
                         style: GoogleFonts.poppins(
+                          color: Colors.white,
                           fontSize: 26,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white, // stays white, gradient shows anyway
                         ),
                       ),
                     ),
-
                     Row(
                       children: [
                         GestureDetector(
-                          onTap: () => Navigator.pushNamed(context, '/notifications'),
+                          onTap: () {
+                            Navigator.pushNamed(context, '/notifications');
+                          },
                           child: Icon(Icons.notifications_none, size: 28, color: iconColor),
                         ),
                         const SizedBox(width: 12),
@@ -57,16 +60,18 @@ class HomeScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         GestureDetector(
-                          onTap: () => Navigator.pushNamed(context, '/profile'),
+                          onTap: () {
+                            Navigator.pushNamed(context, '/profile');
+                          },
                           child: Icon(Icons.person_outline, size: 28, color: iconColor),
                         ),
                       ],
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 60),
 
+                // Purple Circle
                 Center(
                   child: Container(
                     height: 110,
@@ -80,54 +85,66 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 50),
-
                 Center(
                   child: Text(
                     'Discover something new today.',
-                    style: GoogleFonts.poppins(fontSize: 16, color: textColor.withOpacity(0.7)),
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: subTextColor,
+                    ),
                   ),
                 ),
-
                 const SizedBox(height: 50),
 
+                // Start New Chat Box (always with image & white text)
                 GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/chatbot'),
+                  onTap: () {
+                    Navigator.pushNamed(context, '/chatbot');
+                  },
                   child: Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
-                      image: isDarkMode
-                          ? const DecorationImage(
+                      image: const DecorationImage(
                         image: AssetImage('assets/chatbg2.png'),
                         fit: BoxFit.cover,
-                      )
-                          : null,
-                      color: isDarkMode ? null : boxColor,
+                      ),
                     ),
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Start New Chat', style: GoogleFonts.poppins(color: textColor, fontSize: 18, fontWeight: FontWeight.w600)),
+                        Text(
+                          'Start New Chat',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           'Learn through conversation. Ask questions, get instant explanations.',
-                          style: GoogleFonts.poppins(color: textColor.withOpacity(0.7), fontSize: 13),
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 13,
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 30),
 
+                // Other Boxes: Image Analysis & Courses
                 Row(
                   children: [
                     Expanded(
                       child: GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, '/image'),
+                        onTap: () {
+                          Navigator.pushNamed(context, '/image');
+                        },
                         child: Container(
                           padding: const EdgeInsets.all(18),
                           decoration: BoxDecoration(
@@ -139,11 +156,21 @@ class HomeScreen extends StatelessWidget {
                             children: [
                               Icon(Icons.remove_red_eye_outlined, color: iconColor, size: 28),
                               const SizedBox(height: 14),
-                              Text('Image Analysis', style: GoogleFonts.poppins(color: textColor, fontSize: 15, fontWeight: FontWeight.w600)),
+                              Text(
+                                'Image Analysis',
+                                style: GoogleFonts.poppins(
+                                  color: textColor,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                               const SizedBox(height: 8),
                               Text(
                                 'Analyze and identify with AI.\nEnhance your learning.',
-                                style: GoogleFonts.poppins(color: textColor.withOpacity(0.7), fontSize: 12),
+                                style: GoogleFonts.poppins(
+                                  color: subTextColor,
+                                  fontSize: 12,
+                                ),
                               ),
                             ],
                           ),
@@ -153,7 +180,9 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(width: 16),
                     Expanded(
                       child: GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, '/courses'),
+                        onTap: () {
+                          Navigator.pushNamed(context, '/courses');
+                        },
                         child: Container(
                           padding: const EdgeInsets.all(18),
                           decoration: BoxDecoration(
@@ -165,11 +194,21 @@ class HomeScreen extends StatelessWidget {
                             children: [
                               Icon(Icons.menu_book_outlined, color: iconColor, size: 28),
                               const SizedBox(height: 14),
-                              Text('Go to Courses', style: GoogleFonts.poppins(color: textColor, fontSize: 15, fontWeight: FontWeight.w600)),
+                              Text(
+                                'Go to Courses',
+                                style: GoogleFonts.poppins(
+                                  color: textColor,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                               const SizedBox(height: 8),
                               Text(
                                 'Access categorized lessons.\nSharpen your knowledge.',
-                                style: GoogleFonts.poppins(color: textColor.withOpacity(0.7), fontSize: 12),
+                                style: GoogleFonts.poppins(
+                                  color: subTextColor,
+                                  fontSize: 12,
+                                ),
                               ),
                             ],
                           ),
@@ -178,7 +217,6 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 50),
               ],
             ),
