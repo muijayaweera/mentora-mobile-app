@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../constants/ui_constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -24,10 +26,20 @@ class _SignupScreenState extends State<SignupScreen> {
     try {
       setState(() => isLoading = true);
 
+      UserCredential userCredential =
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set({
+        'name': nameController.text.trim(),
+        'email': emailController.text.trim(),
+        'createdAt': Timestamp.now(),
+      });
 
       Navigator.pushReplacementNamed(context, '/login');
 
@@ -42,6 +54,7 @@ class _SignupScreenState extends State<SignupScreen> {
       setState(() => isLoading = false);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
