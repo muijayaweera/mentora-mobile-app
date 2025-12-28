@@ -70,13 +70,12 @@ class _OstomyAppState extends State<OstomyApp> {
       debugShowCheckedModeBanner: false,
       title: 'Ostomy Trainer',
       theme: isDarkMode ? darkTheme : lightTheme,
-
       home: AuthGate(
         toggleTheme: toggleTheme,
         isDarkMode: isDarkMode,
       ),
-
       routes: {
+        '/intro': (context) => IntroScreen(toggleTheme: toggleTheme),
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
         '/home': (context) => HomeScreen(
@@ -90,5 +89,6 @@ class _OstomyAppState extends State<OstomyApp> {
         '/profile': (context) => const ProfileScreen(),
       },
     );
+
   }
 }
