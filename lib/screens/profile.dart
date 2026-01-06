@@ -6,25 +6,31 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  Future<void> logout(BuildContext context) async {
+  Future<void> logout() async {
     await FirebaseAuth.instance.signOut();
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      '/login',
-          (route) => false,
-    );
+    // ✅ AuthGate will handle navigation automatically
   }
 
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
+    // Safety check (should rarely happen)
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF2C2C2E),
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF2C2C2E),
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
             .collection('users')
-            .doc(user!.uid)
+            .doc(user.uid)
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -43,9 +49,10 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 // ================= LOGO =================
                 ShaderMask(
-                  shaderCallback: (bounds) => const LinearGradient(
-                    colors: [Color(0xFFC514C2), Color(0xFFA822D9)],
-                  ).createShader(bounds),
+                  shaderCallback: (bounds) =>
+                      const LinearGradient(
+                        colors: [Color(0xFFC514C2), Color(0xFFA822D9)],
+                      ).createShader(bounds),
                   child: Text(
                     "mentora.",
                     style: GoogleFonts.poppins(
@@ -103,7 +110,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 GestureDetector(
-                  onTap: () => logout(context),
+                  onTap: logout,
                   child: _menuItem(Icons.logout, "Log Out"),
                 ),
               ],

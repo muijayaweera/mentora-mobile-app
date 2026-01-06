@@ -78,10 +78,13 @@ class HomeScreen extends StatelessWidget {
                               icon: Icon(Icons.brightness_6, color: iconColor),
                               onPressed: toggleTheme,
                             ),
-                            IconButton(
-                              icon: Icon(Icons.logout, color: iconColor),
-                              onPressed: logout,
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.pushNamed(context, '/profile');
+                              },
+                              child: Icon(Icons.person_outline, size: 28, color: iconColor),
                             ),
+
                           ],
                         ),
                       ],
@@ -91,7 +94,7 @@ class HomeScreen extends StatelessWidget {
 
                     // ================= GREETING =================
                     Text(
-                      'Welcome, $name 👋',
+                      'Welcome, $name .',
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
