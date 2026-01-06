@@ -3,6 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/course.dart';
 import 'lesson_screen.dart';
 
+// 🔥 Firebase
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class CourseOverviewScreen extends StatefulWidget {
   final Course course;
 
@@ -14,7 +18,38 @@ class CourseOverviewScreen extends StatefulWidget {
 
 class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
   bool courseCompleted = false;
-  int lastLessonIndex = 0; // ✅ ADD THIS HERE
+  int lastLessonIndex = 0;
+
+  // ================= LOAD PROGRESS FROM FIREBASE =================
+  Future<void> loadProgress() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+
+    if (!doc.exists) return;
+
+    final data = doc.data();
+    if (data == null) return;
+
+    final progress = data['courseProgress']?['c1'];
+    if (progress == null) return;
+
+    setState(() {
+      lastLessonIndex = progress['lastLessonIndex'] ?? 0;
+      courseCompleted = progress['completed'] ?? false;
+    });
+  }
+  // ===============================================================
+
+  @override
+  void initState() {
+    super.initState();
+    loadProgress(); // ✅ LOAD progress when screen opens
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +61,7 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title
+              // ================= TITLE =================
               Text(
                 widget.course.title,
                 style: GoogleFonts.poppins(
@@ -38,7 +73,7 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
 
               const SizedBox(height: 25),
 
-              // Overview
+              // ================= OVERVIEW =================
               Text(
                 'Overview',
                 style: GoogleFonts.poppins(
@@ -58,7 +93,7 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
 
               const SizedBox(height: 30),
 
-              // Lesson Topics
+              // ================= LESSON TOPICS =================
               Text(
                 'Lesson Topics',
                 style: GoogleFonts.poppins(
@@ -95,7 +130,7 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
                 ),
               ),
 
-              // Get Started / Continue Button
+              // ================= BUTTON =================
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -118,13 +153,13 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
                       ),
                     );
 
+                    // 🔁 Update local state after returning
                     if (result != null && result is int) {
                       setState(() {
                         lastLessonIndex = result;
                         courseCompleted = true;
                       });
                     }
-
                   },
                   child: Text(
                     courseCompleted ? 'Continue Learning' : 'Get Started',
