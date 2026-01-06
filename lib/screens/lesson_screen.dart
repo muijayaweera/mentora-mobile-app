@@ -4,18 +4,28 @@ import '../models/lesson.dart';
 
 class LessonScreen extends StatefulWidget {
   final List<Lesson> allLessons;
+  final int startIndex;
 
   const LessonScreen({
     super.key,
     required this.allLessons,
+    this.startIndex = 0,
   });
+
 
   @override
   State<LessonScreen> createState() => _LessonScreenState();
 }
 
 class _LessonScreenState extends State<LessonScreen> {
-  int currentIndex = 0;
+  late int currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    currentIndex = widget.startIndex;
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +36,7 @@ class _LessonScreenState extends State<LessonScreen> {
 
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pop(context, true);
+        Navigator.pop(context, currentIndex);
         return false;
       },
       child: Scaffold(
@@ -107,7 +117,7 @@ class _LessonScreenState extends State<LessonScreen> {
                         ),
                       ),
                       onPressed: () {
-                        Navigator.pop(context, true);
+                        Navigator.pop(context, currentIndex);
                       },
                       child: Text(
                         'Complete Module',

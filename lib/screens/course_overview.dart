@@ -14,6 +14,7 @@ class CourseOverviewScreen extends StatefulWidget {
 
 class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
   bool courseCompleted = false;
+  int lastLessonIndex = 0; // ✅ ADD THIS HERE
 
   @override
   Widget build(BuildContext context) {
@@ -112,15 +113,18 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
                       MaterialPageRoute(
                         builder: (_) => LessonScreen(
                           allLessons: widget.course.lessons,
-                        )
+                          startIndex: lastLessonIndex,
+                        ),
                       ),
                     );
 
-                    if (result == true) {
+                    if (result != null && result is int) {
                       setState(() {
+                        lastLessonIndex = result;
                         courseCompleted = true;
                       });
                     }
+
                   },
                   child: Text(
                     courseCompleted ? 'Continue Learning' : 'Get Started',

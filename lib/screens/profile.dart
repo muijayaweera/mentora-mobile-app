@@ -8,20 +8,17 @@ class ProfileScreen extends StatelessWidget {
 
   Future<void> logout() async {
     await FirebaseAuth.instance.signOut();
-    // ✅ AuthGate will handle navigation automatically
+    // ✅ NOTHING ELSE — AuthGate handles navigation
   }
 
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
-    // Safety check (should rarely happen)
+    // 🔐 Safety guard (should never show unless something breaks)
     if (user == null) {
       return const Scaffold(
         backgroundColor: Color(0xFF2C2C2E),
-        body: Center(
-          child: CircularProgressIndicator(color: Colors.white),
-        ),
       );
     }
 
@@ -49,10 +46,9 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 // ================= LOGO =================
                 ShaderMask(
-                  shaderCallback: (bounds) =>
-                      const LinearGradient(
-                        colors: [Color(0xFFC514C2), Color(0xFFA822D9)],
-                      ).createShader(bounds),
+                  shaderCallback: (bounds) => const LinearGradient(
+                    colors: [Color(0xFFC514C2), Color(0xFFA822D9)],
+                  ).createShader(bounds),
                   child: Text(
                     "mentora.",
                     style: GoogleFonts.poppins(

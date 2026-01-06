@@ -5,26 +5,44 @@ final sampleCourse = Course(
   id: 'c1',
   title: 'Fundamentals of Ostomy Care',
   overview:
-  'Learn the essential practices of ostomy care — from understanding stoma types to providing effective patient education and support.',
+  'This course helps you understand the basics of living with an ostomy, '
+      'including daily care, hygiene, and building confidence in your routine.',
   lessons: [
     Lesson(
       id: 'l1',
-      title: 'Introduction to Ostomies',
-      content:
-      'An ostomy is a surgically created opening on the abdomen that allows waste to leave the body...',
       order: 1,
+      title: 'Understanding Your Ostomy',
+      content:
+      'An ostomy is a surgically created opening that allows waste to leave '
+          'the body. In this lesson, you’ll learn why ostomies are created, '
+          'the different types, and how they support your health and recovery.',
     ),
     Lesson(
       id: 'l2',
-      title: 'Types of Stomas and Appliances',
-      content: 'There are different types of stomas depending on the surgery...',
       order: 2,
+      title: 'Daily Care & Hygiene',
+      content:
+      'Daily care is essential for comfort and confidence. This lesson '
+          'covers cleaning around the stoma, changing your pouch system, '
+          'and recognizing signs of irritation or infection.',
     ),
     Lesson(
       id: 'l3',
-      title: 'Routine Care and Hygiene',
-      content: 'Daily care routines are essential for stoma health...',
       order: 3,
+      title: 'Diet & Lifestyle Adjustments',
+      content:
+      'Living with an ostomy doesn’t mean giving up your lifestyle. '
+          'Here we discuss diet tips, hydration, physical activity, '
+          'and managing social situations with ease.',
+    ),
+    Lesson(
+      id: 'l4',
+      order: 4,
+      title: 'Building Confidence & Emotional Wellbeing',
+      content:
+      'It’s normal to experience emotional changes. This lesson focuses on '
+          'self-confidence, body image, and practical tips to help you feel '
+          'empowered and supported.',
     ),
   ],
 );
