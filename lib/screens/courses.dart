@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../data/sample_courses.dart';
+import '../data/course_progress_store.dart';
 import '../models/course.dart';
 import 'course_overview.dart';
 
@@ -10,6 +11,23 @@ class CoursesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ================= PROGRESS LOGIC =================
+    final List<Course> suggestedCourses = [];
+    final List<Course> inProgressCourses = [];
+    final List<Course> completedCourses = [];
+
+    for (final course in sampleCourses) {
+      final progress = CourseProgressStore.getProgress(course.id);
+
+      if (progress.completed) {
+        completedCourses.add(course);
+      } else if (progress.lastLessonIndex > 0) {
+        inProgressCourses.add(course);
+      } else {
+        suggestedCourses.add(course);
+      }
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF2C2C2E),
       body: SingleChildScrollView(
@@ -17,7 +35,7 @@ class CoursesScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top row
+            // ================= TOP BAR =================
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -42,7 +60,7 @@ class CoursesScreen extends StatelessWidget {
 
             const SizedBox(height: 25),
 
-            // Search box (UI only for now)
+            // ================= SEARCH (UI ONLY) =================
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
@@ -61,27 +79,62 @@ class CoursesScreen extends StatelessWidget {
 
             const SizedBox(height: 30),
 
-            Text(
-              "All Courses",
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+            // ================= SUGGESTED =================
+            if (suggestedCourses.isNotEmpty) ...[
+              Text(
+                "Suggested For You",
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ),
+              const SizedBox(height: 12),
+              ...suggestedCourses.map(
+                    (course) => _courseTile(context, course),
+              ),
+              const SizedBox(height: 30),
+            ],
 
-            const SizedBox(height: 12),
+            // ================= IN PROGRESS =================
+            if (inProgressCourses.isNotEmpty) ...[
+              Text(
+                "In Progress",
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ...inProgressCourses.map(
+                    (course) => _courseTile(context, course),
+              ),
+              const SizedBox(height: 30),
+            ],
 
-            ...sampleCourses.map(
-                  (course) => _courseTile(context, course),
-            ),
+            // ================= COMPLETED =================
+            if (completedCourses.isNotEmpty) ...[
+              Text(
+                "Completed",
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ...completedCourses.map(
+                    (course) => _courseTile(context, course),
+              ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  // Course tile widget
+  // ================= COURSE TILE =================
   Widget _courseTile(BuildContext context, Course course) {
     return GestureDetector(
       onTap: () {
@@ -110,9 +163,7 @@ class CoursesScreen extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-
             const SizedBox(height: 6),
-
             Row(
               children: [
                 _badge(course.level),
@@ -132,7 +183,7 @@ class CoursesScreen extends StatelessWidget {
     );
   }
 
-  // Level badge
+  // ================= LEVEL BADGE =================
   Widget _badge(String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

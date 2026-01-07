@@ -5,10 +5,13 @@ import '../models/lesson.dart';
 // 🔥 Firebase
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../services/course_progress_store.dart';
+
 
 class LessonScreen extends StatefulWidget {
   final List<Lesson> allLessons;
   final int startIndex;
+
 
   const LessonScreen({
     super.key,
