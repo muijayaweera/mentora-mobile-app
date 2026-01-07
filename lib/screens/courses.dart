@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../data/sample_courses.dart';
+import '../models/course.dart';
 import 'course_overview.dart';
 
 class CoursesScreen extends StatelessWidget {
@@ -16,7 +17,7 @@ class CoursesScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top row: mentora + badge
+            // Top row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -41,7 +42,7 @@ class CoursesScreen extends StatelessWidget {
 
             const SizedBox(height: 25),
 
-            // Search Box
+            // Search box (UI only for now)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
@@ -51,101 +52,101 @@ class CoursesScreen extends StatelessWidget {
               child: TextField(
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: "Search",
+                  hintText: "Search courses",
                   hintStyle: GoogleFonts.poppins(color: Colors.white54),
                   border: InputBorder.none,
                 ),
               ),
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 30),
 
-            // Suggested For You
             Text(
-              "Suggested For You",
-              style: GoogleFonts.poppins(color: Colors.white, fontSize: 16),
+              "All Courses",
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-            const SizedBox(height: 12),
-            _courseTile(context),
-            const SizedBox(height: 12),
-            _courseTile(context),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 12),
 
-            // My Courses Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "My Courses",
-                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 16),
-                ),
-                Text(
-                  "See All",
-                  style:
-                  GoogleFonts.poppins(color: Colors.white70, fontSize: 14),
-                ),
-              ],
+            ...sampleCourses.map(
+                  (course) => _courseTile(context, course),
             ),
-            const SizedBox(height: 12),
-            _courseTile(context),
-            const SizedBox(height: 12),
-            _courseTile(context),
-
-            const SizedBox(height: 25),
-
-            // All Courses Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "All Courses",
-                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 16),
-                ),
-                Text(
-                  "See All",
-                  style:
-                  GoogleFonts.poppins(color: Colors.white70, fontSize: 14),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _courseTile(context),
-            const SizedBox(height: 12),
-            _courseTile(context),
           ],
         ),
       ),
     );
   }
 
-  // Course Tile Widget
-  Widget _courseTile(BuildContext context) {
+  // Course tile widget
+  Widget _courseTile(BuildContext context, Course course) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) =>
-                CourseOverviewScreen(course: sampleCourse),
+            builder: (_) => CourseOverviewScreen(course: course),
           ),
         );
       },
       child: Container(
-        height: 70,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        alignment: Alignment.centerLeft,
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white12,
           borderRadius: BorderRadius.circular(14),
         ),
-        child: Text(
-          'Fundamentals of Ostomy Care',
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              course.title,
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            Row(
+              children: [
+                _badge(course.level),
+                const SizedBox(width: 8),
+                Text(
+                  course.duration,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Level badge
+  Widget _badge(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFA822D9).withOpacity(0.2),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFA822D9)),
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.poppins(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
