@@ -1,0 +1,6 @@
+healthy
+ischemic
+mucocutaneous_separation
+parastomal_hernia
+prolapse
+skin_excoriation

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'image_recognition.dart';
 
 class ImageScreen extends StatefulWidget {
   const ImageScreen({super.key});
@@ -13,12 +14,10 @@ class ImageScreen extends StatefulWidget {
 }
 
 class _ImageScreenState extends State<ImageScreen> {
-  // Image variables
   File? _selectedImageFile;
   Uint8List? _selectedImageWeb;
   final ImagePicker _picker = ImagePicker();
 
-  // Pick image from gallery
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
@@ -38,7 +37,6 @@ class _ImageScreenState extends State<ImageScreen> {
     }
   }
 
-  // Clear selected image
   void _clearImage() {
     setState(() {
       _selectedImageFile = null;
@@ -55,12 +53,10 @@ class _ImageScreenState extends State<ImageScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Previous chats button
             Align(
               alignment: Alignment.topLeft,
               child: Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.white12,
                   borderRadius: BorderRadius.circular(20),
@@ -74,10 +70,7 @@ class _ImageScreenState extends State<ImageScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 40),
-
-            // Gradient "mentora."
             ShaderMask(
               shaderCallback: (Rect bounds) {
                 return const LinearGradient(
@@ -93,12 +86,7 @@ class _ImageScreenState extends State<ImageScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 40),
-
-            // =======================
-            //   UPLOAD IMAGE BOX
-            // =======================
             Stack(
               children: [
                 GestureDetector(
@@ -111,8 +99,7 @@ class _ImageScreenState extends State<ImageScreen> {
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: Colors.white30),
                     ),
-                    child: (_selectedImageFile == null &&
-                        _selectedImageWeb == null)
+                    child: (_selectedImageFile == null && _selectedImageWeb == null)
                         ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -137,16 +124,18 @@ class _ImageScreenState extends State<ImageScreen> {
                           ? Image.memory(
                         _selectedImageWeb!,
                         fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
                       )
                           : Image.file(
                         _selectedImageFile!,
                         fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
                       ),
                     ),
                   ),
                 ),
-
-                // ❌ Cancel button
                 if (_selectedImageFile != null || _selectedImageWeb != null)
                   Positioned(
                     top: 8,
@@ -171,10 +160,7 @@ class _ImageScreenState extends State<ImageScreen> {
                   ),
               ],
             ),
-
             const SizedBox(height: 22),
-
-            // Add Context Input
             Container(
               height: 42,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -212,25 +198,44 @@ class _ImageScreenState extends State<ImageScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 22),
+            GestureDetector(
+              onTap: () {
+                if (_selectedImageFile == null && _selectedImageWeb == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Please select an image first"),
+                    ),
+                  );
+                  return;
+                }
 
-            // Analyze Button
-            Container(
-              width: 130,
-              height: 42,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFC514C2), Color(0xFFA822D9)],
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ImageRecognitionScreen(
+                      imageFile: _selectedImageFile,
+                      webImage: _selectedImageWeb,
+                    ),
+                  ),
+                );
+              },
+              child: Container(
+                width: 130,
+                height: 42,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFC514C2), Color(0xFFA822D9)],
+                  ),
                 ),
-              ),
-              child: Center(
-                child: Text(
-                  "Analyze",
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 15,
+                child: Center(
+                  child: Text(
+                    "Analyze",
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 15,
+                    ),
                   ),
                 ),
               ),

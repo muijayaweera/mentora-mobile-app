@@ -35,6 +35,9 @@ dependencies:
   image_picker: ^1.0.7
   path_provider: ^2.1.2
 
+  tflite_flutter: ^0.12.1
+  image: ^4.1.7
+
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -74,6 +77,8 @@ flutter:
     - assets/signin.png
     - assets/signup.png
     - assets/loginn.png
+    - assets/models/stoma_model_v2.tflite
+    - assets/models/labels_v2.txt
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
