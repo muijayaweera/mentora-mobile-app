@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'home.dart';
+import '../constants/ui_constants.dart';
 
 class IntroScreen extends StatelessWidget {
   final VoidCallback toggleTheme;
@@ -10,7 +10,7 @@ class IntroScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1C1C),
+      backgroundColor: bgLight,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -19,14 +19,13 @@ class IntroScreen extends StatelessWidget {
             children: [
               const Spacer(),
 
-              // Welcome Text
               Column(
                 children: [
                   Text(
                     'Welcome to',
                     style: GoogleFonts.poppins(
                       fontSize: 28,
-                      color: Colors.white,
+                      color: textDark,
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -51,7 +50,6 @@ class IntroScreen extends StatelessWidget {
 
               const SizedBox(height: 50),
 
-              // Circle Placeholder
               Container(
                 height: 120,
                 width: 120,
@@ -70,37 +68,38 @@ class IntroScreen extends StatelessWidget {
                 'Smarter learning starts here.',
                 style: GoogleFonts.poppins(
                   fontSize: 16,
-                  color: Colors.white70,
+                  color: subTextLight,
                 ),
               ),
 
               const Spacer(),
 
-              // Get Started Button
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HomeScreen(toggleTheme: toggleTheme, isDarkMode: true), // default dark mode
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFA822D9),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: buttonGradient,
+                    borderRadius: BorderRadius.circular(30),
                   ),
-                  child: Text(
-                    'Get Started',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/login');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: Text(
+                      'Get Started',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),

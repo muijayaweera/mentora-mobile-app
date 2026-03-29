@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../constants/ui_constants.dart';
 
 class HomeScreen extends StatelessWidget {
   final VoidCallback toggleTheme;
@@ -21,12 +22,11 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
-    // Theme-aware colors
     final backgroundColor = Theme.of(context).scaffoldBackgroundColor;
-    final boxColor = isDarkMode ? const Color(0xFF2B2B2B) : Colors.white;
-    final textColor = isDarkMode ? Colors.white : const Color(0xFF4A4949);
-    final subTextColor = isDarkMode ? Colors.white70 : const Color(0xFFA4A3A3);
-    final iconColor = isDarkMode ? Colors.white : const Color(0xFF676666);
+    final boxColor = surfaceLight;
+    final textColor = textDark;
+    final subTextColor = subTextLight;
+    final iconColor = iconLight;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -50,7 +50,6 @@ class HomeScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ================= TOP BAR =================
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -82,9 +81,12 @@ class HomeScreen extends StatelessWidget {
                               onTap: () {
                                 Navigator.pushNamed(context, '/profile');
                               },
-                              child: Icon(Icons.person_outline, size: 28, color: iconColor),
+                              child: Icon(
+                                Icons.person_outline,
+                                size: 28,
+                                color: iconColor,
+                              ),
                             ),
-
                           ],
                         ),
                       ],
@@ -92,9 +94,8 @@ class HomeScreen extends StatelessWidget {
 
                     const SizedBox(height: 40),
 
-                    // ================= GREETING =================
                     Text(
-                      'Welcome, $name .',
+                      'Welcome, $name.',
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -104,7 +105,6 @@ class HomeScreen extends StatelessWidget {
 
                     const SizedBox(height: 50),
 
-                    // ================= CIRCLE =================
                     Center(
                       child: Container(
                         height: 110,
@@ -133,7 +133,6 @@ class HomeScreen extends StatelessWidget {
 
                     const SizedBox(height: 40),
 
-                    // ================= CHAT =================
                     GestureDetector(
                       onTap: () => Navigator.pushNamed(context, '/chatbot'),
                       child: Container(
@@ -172,18 +171,15 @@ class HomeScreen extends StatelessWidget {
 
                     const SizedBox(height: 30),
 
-                    // ================= GRID =================
                     Row(
                       children: [
                         Expanded(
                           child: GestureDetector(
-                            onTap: () =>
-                                Navigator.pushNamed(context, '/image'),
+                            onTap: () => Navigator.pushNamed(context, '/image'),
                             child: _infoBox(
                               icon: Icons.remove_red_eye_outlined,
                               title: 'Image Analysis',
-                              desc:
-                              'Analyze and identify with AI.\nEnhance your learning.',
+                              desc: 'Analyze and identify with AI.\nEnhance your learning.',
                               boxColor: boxColor,
                               iconColor: iconColor,
                               textColor: textColor,
@@ -194,13 +190,11 @@ class HomeScreen extends StatelessWidget {
                         const SizedBox(width: 16),
                         Expanded(
                           child: GestureDetector(
-                            onTap: () =>
-                                Navigator.pushNamed(context, '/courses'),
+                            onTap: () => Navigator.pushNamed(context, '/courses'),
                             child: _infoBox(
                               icon: Icons.menu_book_outlined,
                               title: 'Go to Courses',
-                              desc:
-                              'Access categorized lessons.\nSharpen your knowledge.',
+                              desc: 'Access categorized lessons.\nSharpen your knowledge.',
                               boxColor: boxColor,
                               iconColor: iconColor,
                               textColor: textColor,
@@ -234,6 +228,14 @@ class HomeScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: boxColor,
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: borderLight),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

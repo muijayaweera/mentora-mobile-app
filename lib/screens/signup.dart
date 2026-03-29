@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../constants/ui_constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
@@ -46,20 +45,15 @@ class _SignupScreenState extends State<SignupScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Signup successful! Please login.")),
       );
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'Signup failed')),
-      );
     } finally {
       setState(() => isLoading = false);
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1C1C),
+      backgroundColor: bgLight,
       body: SafeArea(
         child: Column(
           children: [
@@ -107,7 +101,9 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-                    color: Colors.black.withOpacity(0.35),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.85),
+                    ),
                     child: Column(
                       children: [
                         Text(
@@ -115,7 +111,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: textDark,
                           ),
                         ),
 
@@ -203,7 +199,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             'Already have an account? Sign In',
                             style: GoogleFonts.poppins(
                               fontSize: 13,
-                              color: Colors.white.withOpacity(0.9),
+                              color: textDark,
                             ),
                           ),
                         ),
@@ -230,23 +226,23 @@ class _SignupScreenState extends State<SignupScreen> {
     return TextField(
       controller: controller,
       obscureText: isPassword && !showText,
-      style: GoogleFonts.poppins(fontSize: 13),
+      style: GoogleFonts.poppins(
+        fontSize: 13,
+        color: textDark,
+      ),
       decoration: InputDecoration(
-        prefixIcon: Icon(icon, size: 20),
+        prefixIcon: Icon(icon, size: 20, color: iconLight),
         suffixIcon: isPassword
             ? GestureDetector(
           onTap: toggleShowText,
-          child: Icon(showText ? Icons.visibility : Icons.visibility_off, size: 18),
+          child: Icon(
+            showText ? Icons.visibility : Icons.visibility_off,
+            size: 18,
+            color: iconLight,
+          ),
         )
             : null,
         hintText: hint,
-        hintStyle: GoogleFonts.poppins(fontSize: 13),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(inputRadius),
-          borderSide: BorderSide.none,
-        ),
       ),
     );
   }

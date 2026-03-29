@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1C1C),
+      backgroundColor: bgLight,
       body: SafeArea(
         child: Column(
           children: [
@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
 
-            const SizedBox(height: 60),
+            const SizedBox(height: 40),
 
             Expanded(
               child: ClipRRect(
@@ -92,7 +92,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(20, 26, 20, 24),
-                    color: Colors.black.withOpacity(0.35),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.82),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -100,9 +102,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Text(
                             'Sign in to your account',
                             style: GoogleFonts.poppins(
-                              color: Colors.white,
+                              color: textDark,
                               fontSize: 17,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -147,7 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Text(
                               'Forgot Password?',
                               style: GoogleFonts.poppins(
-                                color: Colors.white.withOpacity(0.9),
+                                color: subTextLight,
                                 fontSize: 12,
                               ),
                             ),
@@ -190,7 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Text(
                               "Don't have an account? Sign Up!",
                               style: GoogleFonts.poppins(
-                                color: Colors.white.withOpacity(0.9),
+                                color: textDark,
                                 fontSize: 12.5,
                               ),
                             ),
@@ -219,24 +221,23 @@ class _LoginScreenState extends State<LoginScreen> {
     return TextField(
       controller: controller,
       obscureText: isPassword && !showText,
-      style: GoogleFonts.poppins(fontSize: 13),
+      style: GoogleFonts.poppins(
+        fontSize: 13,
+        color: textDark,
+      ),
       decoration: InputDecoration(
-        prefixIcon: Icon(icon, size: 20),
+        prefixIcon: Icon(icon, size: 20, color: iconLight),
         suffixIcon: isPassword
             ? GestureDetector(
           onTap: toggleShowText,
-          child: Icon(showText ? Icons.visibility : Icons.visibility_off, size: 18),
+          child: Icon(
+            showText ? Icons.visibility : Icons.visibility_off,
+            size: 18,
+            color: iconLight,
+          ),
         )
             : null,
         hintText: hint,
-        hintStyle: GoogleFonts.poppins(fontSize: 13),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(inputRadius),
-          borderSide: BorderSide.none,
-        ),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../constants/ui_constants.dart';
 
 class ChatbotScreen extends StatelessWidget {
   const ChatbotScreen({super.key});
@@ -7,33 +8,33 @@ class ChatbotScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF2C2C2E),
+      backgroundColor: bgLight,
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Previous Chats Button
             Align(
               alignment: Alignment.topLeft,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white12,
+                  color: surfaceLight,
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: borderLight),
                 ),
                 child: Text(
                   "Previous Chats",
                   style: GoogleFonts.poppins(
-                    color: Colors.white70,
+                    color: subTextLight,
                     fontSize: 12,
                   ),
                 ),
               ),
             ),
+
             const SizedBox(height: 40),
 
-            // Gradient Text
             ShaderMask(
               shaderCallback: (Rect bounds) {
                 return const LinearGradient(
@@ -52,7 +53,6 @@ class ChatbotScreen extends StatelessWidget {
 
             const SizedBox(height: 50),
 
-            // Animated Circle
             Container(
               width: 150,
               height: 150,
@@ -70,29 +70,39 @@ class ChatbotScreen extends StatelessWidget {
             Text(
               "How can I assist you today?",
               style: GoogleFonts.poppins(
-                color: Colors.white,
+                color: textDark,
                 fontSize: 16,
               ),
             ),
 
             const SizedBox(height: 30),
 
-            // Input Field
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.white10,
+                color: surfaceLight,
                 borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: borderLight),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
                   Expanded(
                     child: TextField(
-                      style: const TextStyle(color: Colors.white),
+                      style: GoogleFonts.poppins(
+                        color: textDark,
+                        fontSize: 14,
+                      ),
                       decoration: InputDecoration(
                         hintText: "Ask Mentora..",
                         hintStyle: GoogleFonts.poppins(
-                          color: Colors.white54,
+                          color: subTextLight,
                           fontSize: 14,
                         ),
                         border: InputBorder.none,
@@ -102,7 +112,7 @@ class ChatbotScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: const BoxDecoration(
-                      color: Color(0xFFA822D9),
+                      gradient: buttonGradient,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -120,4 +130,3 @@ class ChatbotScreen extends StatelessWidget {
     );
   }
 }
-

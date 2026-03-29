@@ -14,13 +14,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'screens/auth_gate.dart';
 
-
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Make sure Flutter is ready
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // uses firebase_options.dart
+    options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const OstomyApp()); // Start your app
+  runApp(const OstomyApp());
 }
 
 class OstomyApp extends StatefulWidget {
@@ -31,7 +30,7 @@ class OstomyApp extends StatefulWidget {
 }
 
 class _OstomyAppState extends State<OstomyApp> {
-  bool isDarkMode = true;
+  bool isDarkMode = false; // changed
 
   void toggleTheme() {
     setState(() {
@@ -39,28 +38,51 @@ class _OstomyAppState extends State<OstomyApp> {
     });
   }
 
-  // Define your themes
   ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
-    scaffoldBackgroundColor: const Color(0xFFF5F4F4),
-    primarySwatch: Colors.teal,
+    scaffoldBackgroundColor: const Color(0xFFF7F7F9),
+    primaryColor: const Color(0xFFA822D9),
     iconTheme: const IconThemeData(color: Color(0xFF676666)),
+    cardColor: Colors.white,
+    dividerColor: const Color(0xFFE7E7E7),
     textTheme: GoogleFonts.poppinsTextTheme(
       const TextTheme(
-        bodyMedium: TextStyle(color: Color(0xFF4A4949)), // <- updated
-        bodySmall: TextStyle(color: Color(0xFF4A4949)),
-        bodyLarge: TextStyle(color: Color(0xFF4A4949)),
+        bodyLarge: TextStyle(color: Color(0xFF2E2E2E)),
+        bodyMedium: TextStyle(color: Color(0xFF2E2E2E)),
+        bodySmall: TextStyle(color: Color(0xFF7A7A7A)),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFE7E7E7)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFA822D9), width: 1.2),
+      ),
+      hintStyle: GoogleFonts.poppins(
+        fontSize: 13,
+        color: const Color(0xFF9A9A9A),
       ),
     ),
   );
-
 
   ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     scaffoldBackgroundColor: const Color(0xFF1C1C1C),
     iconTheme: const IconThemeData(color: Colors.white),
     textTheme: GoogleFonts.poppinsTextTheme(
-      const TextTheme(bodyMedium: TextStyle(color: Colors.white)),
+      const TextTheme(
+        bodyMedium: TextStyle(color: Colors.white),
+      ),
     ),
   );
 
@@ -89,6 +111,5 @@ class _OstomyAppState extends State<OstomyApp> {
         '/profile': (context) => const ProfileScreen(),
       },
     );
-
   }
 }

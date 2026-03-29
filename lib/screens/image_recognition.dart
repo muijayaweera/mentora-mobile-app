@@ -5,9 +5,12 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:google_fonts/google_fonts.dart';
+import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
-import 'package:image/image.dart' as img;
+
+import '../constants/ui_constants.dart';
 
 class ImageRecognitionScreen extends StatefulWidget {
   final File? imageFile;
@@ -206,123 +209,289 @@ class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
   Widget build(BuildContext context) {
     final showImageWidget = () {
       if (_imageFile == null && _webImage == null) {
-        return const Icon(Icons.image_outlined, size: 120, color: Colors.grey);
+        return Container(
+          height: 260,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: surfaceLight,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: borderLight),
+          ),
+          child: const Center(
+            child: Icon(
+              Icons.image_outlined,
+              size: 90,
+              color: iconLight,
+            ),
+          ),
+        );
       }
+
       if (kIsWeb && _webImage != null) {
         return ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Image.memory(_webImage!, height: 260),
+          borderRadius: BorderRadius.circular(20),
+          child: Image.memory(
+            _webImage!,
+            height: 260,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          ),
         );
       }
+
       if (!kIsWeb && _imageFile != null) {
         return ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Image.file(_imageFile!, height: 260),
+          borderRadius: BorderRadius.circular(20),
+          child: Image.file(
+            _imageFile!,
+            height: 260,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          ),
         );
       }
+
       return const SizedBox.shrink();
     }();
 
+    final confidencePercent =
+    _predConfidence != null ? min(1.0, _predConfidence!) * 100 : 0.0;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Image Recognition"),
-        backgroundColor: const Color(0xFFA822D9),
-      ),
-      backgroundColor: const Color(0xFF1C1C1C),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                if (_loadingModel)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 30),
-                    child: CircularProgressIndicator(),
-                  )
-                else
-                  showImageWidget,
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFA822D9),
-                    minimumSize: const Size(double.infinity, 48),
-                  ),
-                  onPressed: () => _pickImage(ImageSource.gallery),
-                  icon: const Icon(Icons.photo_library, color: Colors.white),
-                  label: const Text(
-                    "Pick from Gallery",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                if (!kIsWeb)
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFA822D9),
-                      minimumSize: const Size(double.infinity, 48),
-                    ),
-                    onPressed: () => _pickImage(ImageSource.camera),
-                    icon: const Icon(Icons.camera_alt, color: Colors.white),
-                    label: const Text(
-                      "Take a Photo",
-                      style: TextStyle(color: Colors.white),
+      backgroundColor: bgLight,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+          child: Center(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ShaderMask(
+                    shaderCallback: (Rect bounds) {
+                      return const LinearGradient(
+                        colors: [Color(0xFFC514C2), Color(0xFFA822D9)],
+                      ).createShader(bounds);
+                    },
+                    child: Text(
+                      "mentora.",
+                      style: GoogleFonts.poppins(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                const SizedBox(height: 22),
-                if (kIsWeb)
-                  const Text(
-                    "Prediction runs on mobile only (TFLite not supported on web).",
-                    style: TextStyle(color: Colors.white70),
-                    textAlign: TextAlign.center,
-                  ),
-                if (_running) ...[
+
                   const SizedBox(height: 10),
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 10),
-                  const Text(
-                    "Analyzing image...",
-                    style: TextStyle(color: Colors.white70),
+
+                  Text(
+                    "Analysis Result",
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: textDark,
+                    ),
                   ),
-                ],
-                if (_predLabel != null && _predConfidence != null) ...[
-                  const SizedBox(height: 18),
+
+                  const SizedBox(height: 6),
+
+                  Text(
+                    "AI-assisted image assessment",
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: subTextLight,
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+
                   Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2B2B2B),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Prediction",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _prettyLabel(_predLabel!),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          "Confidence: ${(min(1.0, _predConfidence!) * 100).toStringAsFixed(1)}%",
-                          style: const TextStyle(color: Colors.white70),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
+                    child: showImageWidget,
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  if (_loadingModel)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8, bottom: 8),
+                      child: CircularProgressIndicator(),
+                    ),
+
+                  if (kIsWeb)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: surfaceLight,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: borderLight),
+                      ),
+                      child: Text(
+                        "Prediction runs on mobile only (TFLite not supported on web).",
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          color: subTextLight,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+
+                  if (_running) ...[
+                    const SizedBox(height: 18),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: surfaceLight,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: borderLight),
+                      ),
+                      child: Column(
+                        children: [
+                          const CircularProgressIndicator(),
+                          const SizedBox(height: 14),
+                          Text(
+                            "Analyzing image...",
+                            style: GoogleFonts.poppins(
+                              color: subTextLight,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  if (_predLabel != null && _predConfidence != null) ...[
+                    const SizedBox(height: 18),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: surfaceLight,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: borderLight),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF4E8FA),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              "Detected Condition",
+                              style: GoogleFonts.poppins(
+                                color: const Color(0xFFA822D9),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            _prettyLabel(_predLabel!),
+                            style: GoogleFonts.poppins(
+                              color: textDark,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Confidence",
+                                style: GoogleFonts.poppins(
+                                  color: subTextLight,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              Text(
+                                "${confidencePercent.toStringAsFixed(1)}%",
+                                style: GoogleFonts.poppins(
+                                  color: textDark,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: LinearProgressIndicator(
+                              value: confidencePercent / 100,
+                              minHeight: 10,
+                              backgroundColor: const Color(0xFFEDE7F6),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                Color(0xFFA822D9),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            "This result is generated by the AI model and should be used as a learning aid.",
+                            style: GoogleFonts.poppins(
+                              color: subTextLight,
+                              fontSize: 12,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 22),
+
+                  GestureDetector(
+                    onTap: () => _pickImage(ImageSource.gallery),
+                    child: Container(
+                      width: double.infinity,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: buttonGradient,
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "Try Another Image",
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
-              ],
+              ),
             ),
           ),
         ),
