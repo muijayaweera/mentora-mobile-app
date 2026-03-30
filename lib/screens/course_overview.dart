@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/course.dart';
+import '../models/lesson.dart';
 import 'lesson_screen.dart';
 
 // 🔥 Firebase
@@ -19,6 +20,8 @@ class CourseOverviewScreen extends StatefulWidget {
 class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
   bool courseCompleted = false;
   int lastLessonIndex = 0;
+  bool isLoadingLessons = true;
+  List<Lesson> lessons = [];
 
   // ================= LOAD PROGRESS FROM FIREBASE =================
   Future<void> loadProgress() async {
@@ -35,7 +38,7 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
     final data = doc.data();
     if (data == null) return;
 
-    final progress = data['courseProgress']?['c1'];
+    final progress = data['courseProgress']?[widget.course.id];
     if (progress == null) return;
 
     setState(() {
@@ -45,10 +48,55 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
   }
   // ===============================================================
 
+  // ================= FETCH LESSONS / MODULES =====================
+  Future<void> fetchLessons() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('courses')
+          .doc(widget.course.id)
+          .collection('modules')
+          .orderBy('order')
+          .get();
+
+      final loadedLessons = snapshot.docs.map((doc) {
+        final data = doc.data();
+
+        return Lesson(
+          id: doc.id,
+          title: data['title'] ?? '',
+          content: data['contentText'] ?? '',
+          order: data['order'] ?? 0,
+        );
+      }).toList();
+
+      setState(() {
+        lessons = loadedLessons;
+        isLoadingLessons = false;
+      });
+    } catch (e) {
+      debugPrint('Error fetching lessons: $e');
+      setState(() {
+        isLoadingLessons = false;
+      });
+    }
+  }
+  // ===============================================================
+
   @override
   void initState() {
     super.initState();
-    loadProgress(); // ✅ LOAD progress when screen opens
+    loadProgress();
+    fetchLessons();
+  }
+
+  String get buttonText {
+    if (courseCompleted) {
+      return 'Review Course';
+    }
+    if (lastLessonIndex > 0) {
+      return 'Continue Learning';
+    }
+    return 'Get Started';
   }
 
   @override
@@ -105,10 +153,27 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
               const SizedBox(height: 12),
 
               Expanded(
-                child: ListView.builder(
-                  itemCount: widget.course.lessons.length,
+                child: isLoadingLessons
+                    ? const Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xFFA822D9),
+                  ),
+                )
+                    : lessons.isEmpty
+                    ? Center(
+                  child: Text(
+                    'No lessons available for this course yet.',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+                    : ListView.builder(
+                  itemCount: lessons.length,
                   itemBuilder: (context, index) {
-                    final lesson = widget.course.lessons[index];
+                    final lesson = lessons[index];
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Container(
@@ -142,27 +207,35 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  onPressed: () async {
+                  onPressed: lessons.isEmpty
+                      ? null
+                      : () async {
+                    final safeStartIndex =
+                    lastLessonIndex >= lessons.length
+                        ? 0
+                        : lastLessonIndex;
+
                     final result = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => LessonScreen(
-                          allLessons: widget.course.lessons,
-                          startIndex: lastLessonIndex,
+                          allLessons: lessons,
+                          courseId: widget.course.id,
+                          startIndex: safeStartIndex,
                         ),
                       ),
                     );
 
-                    // 🔁 Update local state after returning
                     if (result != null && result is int) {
+                      await loadProgress();
+
                       setState(() {
                         lastLessonIndex = result;
-                        courseCompleted = true;
                       });
                     }
                   },
                   child: Text(
-                    courseCompleted ? 'Continue Learning' : 'Get Started',
+                    buttonText,
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,

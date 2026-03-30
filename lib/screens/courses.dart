@@ -1,14 +1,120 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../constants/ui_constants.dart';
-import '../data/sample_courses.dart';
-import '../data/course_progress_store.dart';
 import '../models/course.dart';
 import 'course_overview.dart';
 
-class CoursesScreen extends StatelessWidget {
+class CoursesScreen extends StatefulWidget {
   const CoursesScreen({super.key});
+
+  @override
+  State<CoursesScreen> createState() => _CoursesScreenState();
+}
+
+class _CoursesScreenState extends State<CoursesScreen> {
+  List<Course> allCourses = [];
+  Map<String, dynamic> courseProgressMap = {};
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCoursesAndProgress();
+  }
+
+  Future<void> fetchCoursesAndProgress() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+
+      // 1) Fetch published courses from Firestore
+      final coursesSnapshot = await FirebaseFirestore.instance
+          .collection('courses')
+          .get();
+
+      debugPrint('Courses found: ${coursesSnapshot.docs.length}');
+
+      for (final doc in coursesSnapshot.docs) {
+        debugPrint('Course ID: ${doc.id}');
+        debugPrint('Data: ${doc.data()}');
+      }
+
+      final fetchedCourses = coursesSnapshot.docs.map((doc) {
+        final data = doc.data();
+
+        return Course(
+          id: doc.id,
+          title: data['title'] ?? '',
+          overview: data['overview'] ?? '',
+          level: data['level'] ?? '',
+          duration: data['duration'] ?? '',
+          lessons: const [], // lessons will be fetched later in course_overview.dart
+        );
+      }).toList();
+
+      // 2) Fetch user progress from Firestore
+      Map<String, dynamic> progressMap = {};
+
+      if (user != null) {
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        if (userDoc.exists) {
+          final userData = userDoc.data();
+          if (userData != null && userData['courseProgress'] != null) {
+            progressMap = Map<String, dynamic>.from(
+              userData['courseProgress'],
+            );
+          }
+        }
+      }
+
+      setState(() {
+        allCourses = fetchedCourses;
+        courseProgressMap = progressMap;
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('Error fetching courses/progress: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  int _getLastLessonIndex(String courseId) {
+    final progress = courseProgressMap[courseId];
+    if (progress == null) return 0;
+
+    if (progress is Map<String, dynamic>) {
+      return progress['lastLessonIndex'] ?? 0;
+    }
+
+    if (progress is Map) {
+      return progress['lastLessonIndex'] ?? 0;
+    }
+
+    return 0;
+  }
+
+  bool _isCompleted(String courseId) {
+    final progress = courseProgressMap[courseId];
+    if (progress == null) return false;
+
+    if (progress is Map<String, dynamic>) {
+      return progress['completed'] ?? false;
+    }
+
+    if (progress is Map) {
+      return progress['completed'] ?? false;
+    }
+
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,12 +122,13 @@ class CoursesScreen extends StatelessWidget {
     final List<Course> inProgressCourses = [];
     final List<Course> completedCourses = [];
 
-    for (final course in sampleCourses) {
-      final progress = CourseProgressStore.getProgress(course.id);
+    for (final course in allCourses) {
+      final completed = _isCompleted(course.id);
+      final lastLessonIndex = _getLastLessonIndex(course.id);
 
-      if (progress.completed) {
+      if (completed) {
         completedCourses.add(course);
-      } else if (progress.lastLessonIndex > 0) {
+      } else if (lastLessonIndex > 0) {
         inProgressCourses.add(course);
       } else {
         suggestedCourses.add(course);
@@ -31,7 +138,23 @@ class CoursesScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: bgLight,
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: isLoading
+            ? const Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFFA822D9),
+          ),
+        )
+            : allCourses.isEmpty
+            ? Center(
+          child: Text(
+            "No published courses available yet.",
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: subTextLight,
+            ),
+          ),
+        )
+            : SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 32, 24, 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -112,21 +235,24 @@ class CoursesScreen extends StatelessWidget {
               if (suggestedCourses.isNotEmpty) ...[
                 _sectionTitle("Suggested For You"),
                 const SizedBox(height: 14),
-                ...suggestedCourses.map((course) => _courseTile(context, course)),
+                ...suggestedCourses
+                    .map((course) => _courseTile(context, course)),
                 const SizedBox(height: 26),
               ],
 
               if (inProgressCourses.isNotEmpty) ...[
                 _sectionTitle("In Progress"),
                 const SizedBox(height: 14),
-                ...inProgressCourses.map((course) => _courseTile(context, course)),
+                ...inProgressCourses
+                    .map((course) => _courseTile(context, course)),
                 const SizedBox(height: 26),
               ],
 
               if (completedCourses.isNotEmpty) ...[
                 _sectionTitle("Completed"),
                 const SizedBox(height: 14),
-                ...completedCourses.map((course) => _courseTile(context, course)),
+                ...completedCourses
+                    .map((course) => _courseTile(context, course)),
               ],
             ],
           ),
@@ -148,13 +274,16 @@ class CoursesScreen extends StatelessWidget {
 
   Widget _courseTile(BuildContext context, Course course) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => CourseOverviewScreen(course: course),
           ),
         );
+
+        // Refresh progress after returning from course overview / lessons
+        fetchCoursesAndProgress();
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),

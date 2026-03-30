@@ -5,17 +5,16 @@ import '../models/lesson.dart';
 // 🔥 Firebase
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../services/course_progress_store.dart';
-
 
 class LessonScreen extends StatefulWidget {
   final List<Lesson> allLessons;
+  final String courseId;
   final int startIndex;
-
 
   const LessonScreen({
     super.key,
     required this.allLessons,
+    required this.courseId,
     this.startIndex = 0,
   });
 
@@ -29,7 +28,6 @@ class _LessonScreenState extends State<LessonScreen> {
   @override
   void initState() {
     super.initState();
-    // ✅ Start from saved lesson index
     currentIndex = widget.startIndex;
   }
 
@@ -44,7 +42,7 @@ class _LessonScreenState extends State<LessonScreen> {
         .set(
       {
         'courseProgress': {
-          'c1': {
+          widget.courseId: {
             'lastLessonIndex': currentIndex,
             'completed': completed,
           }
@@ -59,12 +57,10 @@ class _LessonScreenState extends State<LessonScreen> {
   Widget build(BuildContext context) {
     final lesson = widget.allLessons[currentIndex];
     final bool isFirstLesson = currentIndex == 0;
-    final bool isLastLesson =
-        currentIndex == widget.allLessons.length - 1;
+    final bool isLastLesson = currentIndex == widget.allLessons.length - 1;
 
     return WillPopScope(
       onWillPop: () async {
-        // ✅ Save progress when user leaves lesson screen
         await saveProgress();
         Navigator.pop(context, currentIndex);
         return false;
@@ -104,8 +100,7 @@ class _LessonScreenState extends State<LessonScreen> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: LinearProgressIndicator(
-                    value:
-                    (currentIndex + 1) / widget.allLessons.length,
+                    value: (currentIndex + 1) / widget.allLessons.length,
                     backgroundColor: Colors.white12,
                     valueColor: const AlwaysStoppedAnimation(
                       Color(0xFFA822D9),
@@ -138,17 +133,14 @@ class _LessonScreenState extends State<LessonScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        padding:
-                        const EdgeInsets.symmetric(vertical: 14),
-                        backgroundColor:
-                        const Color(0xFFA822D9),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: const Color(0xFFA822D9),
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                          BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                       onPressed: () async {
-                        // ✅ Mark course as completed
                         await saveProgress(completed: true);
                         Navigator.pop(context, currentIndex);
                       },
@@ -169,23 +161,19 @@ class _LessonScreenState extends State<LessonScreen> {
                           flex: 4,
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
-                              padding:
-                              const EdgeInsets.symmetric(
-                                  vertical: 14),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
                               side: const BorderSide(
                                 color: Color(0xFFA822D9),
                                 width: 1.6,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius:
-                                BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(14),
                               ),
                             ),
                             onPressed: () async {
                               setState(() {
                                 currentIndex--;
                               });
-                              // ✅ Save progress
                               await saveProgress();
                             },
                             child: Text(
@@ -197,28 +185,22 @@ class _LessonScreenState extends State<LessonScreen> {
                             ),
                           ),
                         ),
-                      if (!isFirstLesson)
-                        const SizedBox(width: 12),
+                      if (!isFirstLesson) const SizedBox(width: 12),
                       Expanded(
                         flex: 6,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             foregroundColor: Colors.white,
-                            padding:
-                            const EdgeInsets.symmetric(
-                                vertical: 14),
-                            backgroundColor:
-                            const Color(0xFFA822D9),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            backgroundColor: const Color(0xFFA822D9),
                             shape: RoundedRectangleBorder(
-                              borderRadius:
-                              BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                           ),
                           onPressed: () async {
                             setState(() {
                               currentIndex++;
                             });
-                            // ✅ Save progress
                             await saveProgress();
                           },
                           child: Text(
