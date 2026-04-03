@@ -42,6 +42,7 @@ class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
   double? _predConfidence;
 
   static const int _inputSize = 224;
+  static const double _invalidThreshold = 0.70;
 
   @override
   void initState() {
@@ -178,7 +179,11 @@ class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
       }
 
       setState(() {
-        _predLabel = bestIdx < _labels.length ? _labels[bestIdx] : "unknown";
+        if (bestScore < _invalidThreshold) {
+          _predLabel = "invalid_image";
+        } else {
+          _predLabel = bestIdx < _labels.length ? _labels[bestIdx] : "unknown";
+        }
         _predConfidence = bestScore;
         _running = false;
       });
@@ -282,9 +287,7 @@ class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 10),
-
                   Text(
                     "Analysis Result",
                     style: GoogleFonts.poppins(
@@ -293,9 +296,7 @@ class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
                       color: textDark,
                     ),
                   ),
-
                   const SizedBox(height: 6),
-
                   Text(
                     "AI-assisted image assessment",
                     style: GoogleFonts.poppins(
@@ -303,9 +304,7 @@ class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
                       color: subTextLight,
                     ),
                   ),
-
                   const SizedBox(height: 30),
-
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
@@ -319,15 +318,12 @@ class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
                     ),
                     child: showImageWidget,
                   ),
-
                   const SizedBox(height: 24),
-
                   if (_loadingModel)
                     const Padding(
                       padding: EdgeInsets.only(top: 8, bottom: 8),
                       child: CircularProgressIndicator(),
                     ),
-
                   if (kIsWeb)
                     Container(
                       width: double.infinity,
@@ -346,7 +342,6 @@ class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
                         ),
                       ),
                     ),
-
                   if (_running) ...[
                     const SizedBox(height: 18),
                     Container(
@@ -372,7 +367,6 @@ class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
                       ),
                     ),
                   ],
-
                   if (_predLabel != null && _predConfidence != null) ...[
                     const SizedBox(height: 18),
                     Container(
@@ -403,7 +397,9 @@ class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              "Detected Condition",
+                              _predLabel == "invalid_image"
+                                  ? "Image Check"
+                                  : "Detected Condition",
                               style: GoogleFonts.poppins(
                                 color: const Color(0xFFA822D9),
                                 fontSize: 12,
@@ -413,7 +409,9 @@ class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            _prettyLabel(_predLabel!),
+                            _predLabel == "invalid_image"
+                                ? "Unrecognized image"
+                                : _prettyLabel(_predLabel!),
                             style: GoogleFonts.poppins(
                               color: textDark,
                               fontSize: 22,
@@ -425,7 +423,9 @@ class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                "Confidence",
+                                _predLabel == "invalid_image"
+                                    ? "Model confidence"
+                                    : "Confidence",
                                 style: GoogleFonts.poppins(
                                   color: subTextLight,
                                   fontSize: 13,
@@ -455,7 +455,9 @@ class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
                           ),
                           const SizedBox(height: 14),
                           Text(
-                            "This result is generated by the AI model and should be used as a learning aid.",
+                            _predLabel == "invalid_image"
+                                ? "Please upload a clear stoma image for analysis."
+                                : "This result is generated by the AI model and should be used as a learning aid.",
                             style: GoogleFonts.poppins(
                               color: subTextLight,
                               fontSize: 12,
@@ -466,9 +468,7 @@ class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
                       ),
                     ),
                   ],
-
                   const SizedBox(height: 22),
-
                   GestureDetector(
                     onTap: () => _pickImage(ImageSource.gallery),
                     child: Container(

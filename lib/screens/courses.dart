@@ -32,6 +32,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
       // 1) Fetch published courses from Firestore
       final coursesSnapshot = await FirebaseFirestore.instance
           .collection('courses')
+          .where('status', isEqualTo: 'published')
           .get();
 
       debugPrint('Courses found: ${coursesSnapshot.docs.length}');
