@@ -6,6 +6,8 @@ import '../models/lesson.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../constants/ui_constants.dart';
+
 class LessonScreen extends StatefulWidget {
   final List<Lesson> allLessons;
   final String courseId;
@@ -31,15 +33,11 @@ class _LessonScreenState extends State<LessonScreen> {
     currentIndex = widget.startIndex;
   }
 
-  // ================= SAVE PROGRESS TO FIREBASE =================
   Future<void> saveProgress({bool completed = false}) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .set(
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
       {
         'courseProgress': {
           widget.courseId: {
@@ -51,13 +49,13 @@ class _LessonScreenState extends State<LessonScreen> {
       SetOptions(merge: true),
     );
   }
-  // ============================================================
 
   @override
   Widget build(BuildContext context) {
     final lesson = widget.allLessons[currentIndex];
-    final bool isFirstLesson = currentIndex == 0;
-    final bool isLastLesson = currentIndex == widget.allLessons.length - 1;
+    final isFirstLesson = currentIndex == 0;
+    final isLastLesson = currentIndex == widget.allLessons.length - 1;
+    final progressValue = (currentIndex + 1) / widget.allLessons.length;
 
     return WillPopScope(
       onWillPop: () async {
@@ -66,78 +64,121 @@ class _LessonScreenState extends State<LessonScreen> {
         return false;
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF2C2C2E),
+        backgroundColor: bgLight,
+        appBar: AppBar(
+          backgroundColor: bgLight,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          iconTheme: const IconThemeData(color: textDark),
+          title: Text(
+            'Lesson',
+            style: GoogleFonts.poppins(
+              color: textDark,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ================= TITLE =================
-                Text(
-                  lesson.title,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: surfaceLight,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: borderLight),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                ),
-
-                const SizedBox(height: 12),
-
-                // ================= PROGRESS TEXT =================
-                Text(
-                  'Lesson ${currentIndex + 1} of ${widget.allLessons.length}',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white70,
-                    fontSize: 13,
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // ================= PROGRESS BAR =================
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: LinearProgressIndicator(
-                    value: (currentIndex + 1) / widget.allLessons.length,
-                    backgroundColor: Colors.white12,
-                    valueColor: const AlwaysStoppedAnimation(
-                      Color(0xFFA822D9),
-                    ),
-                    minHeight: 6,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        lesson.title,
+                        style: GoogleFonts.poppins(
+                          color: textDark,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Lesson ${currentIndex + 1} of ${widget.allLessons.length}',
+                        style: GoogleFonts.poppins(
+                          color: subTextLight,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: LinearProgressIndicator(
+                          value: progressValue,
+                          backgroundColor: const Color(0xFFF1E7F8),
+                          valueColor: const AlwaysStoppedAnimation(
+                            Color(0xFFA822D9),
+                          ),
+                          minHeight: 8,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
                 const SizedBox(height: 20),
 
-                // ================= CONTENT =================
                 Expanded(
-                  child: SingleChildScrollView(
-                    child: Text(
-                      lesson.content,
-                      style: GoogleFonts.poppins(
-                        color: Colors.white70,
-                        fontSize: 14,
-                        height: 1.6,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: surfaceLight,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: borderLight),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.035),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: SingleChildScrollView(
+                      child: Text(
+                        lesson.content,
+                        style: GoogleFonts.poppins(
+                          color: subTextLight,
+                          fontSize: 14,
+                          height: 1.75,
+                        ),
                       ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
 
-                // ================= BUTTONS =================
                 if (isLastLesson)
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
                         backgroundColor: const Color(0xFFA822D9),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 15),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                       ),
                       onPressed: () async {
@@ -161,13 +202,14 @@ class _LessonScreenState extends State<LessonScreen> {
                           flex: 4,
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              foregroundColor: const Color(0xFFA822D9),
+                              padding: const EdgeInsets.symmetric(vertical: 15),
                               side: const BorderSide(
                                 color: Color(0xFFA822D9),
-                                width: 1.6,
+                                width: 1.4,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(16),
                               ),
                             ),
                             onPressed: () async {
@@ -179,8 +221,8 @@ class _LessonScreenState extends State<LessonScreen> {
                             child: Text(
                               'Previous',
                               style: GoogleFonts.poppins(
-                                color: Colors.white,
                                 fontSize: 14,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
@@ -191,10 +233,11 @@ class _LessonScreenState extends State<LessonScreen> {
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
                             backgroundColor: const Color(0xFFA822D9),
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 15),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                           ),
                           onPressed: () async {

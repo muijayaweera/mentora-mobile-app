@@ -79,6 +79,8 @@ flutter:
     - assets/loginn.png
     - assets/models/stoma_model_v2.tflite
     - assets/models/labels_v2.txt
+    - assets/images/home_orb.png
+    - assets/images/home_orb1.png
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

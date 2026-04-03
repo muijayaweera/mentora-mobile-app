@@ -8,6 +8,9 @@ import 'lesson_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// ✅ same UI constants style as courses page
+import '../constants/ui_constants.dart';
+
 class CourseOverviewScreen extends StatefulWidget {
   final Course course;
 
@@ -23,7 +26,6 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
   bool isLoadingLessons = true;
   List<Lesson> lessons = [];
 
-  // ================= LOAD PROGRESS FROM FIREBASE =================
   Future<void> loadProgress() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -46,9 +48,7 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
       courseCompleted = progress['completed'] ?? false;
     });
   }
-  // ===============================================================
 
-  // ================= FETCH LESSONS / MODULES =====================
   Future<void> fetchLessons() async {
     try {
       final snapshot = await FirebaseFirestore.instance
@@ -58,9 +58,14 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
           .orderBy('order')
           .get();
 
+      debugPrint('Course ID: ${widget.course.id}');
+      debugPrint('Modules found: ${snapshot.docs.length}');
+      for (final doc in snapshot.docs) {
+        debugPrint('Module ${doc.id}: ${doc.data()}');
+      }
+
       final loadedLessons = snapshot.docs.map((doc) {
         final data = doc.data();
-
         return Lesson(
           id: doc.id,
           title: data['title'] ?? '',
@@ -80,7 +85,6 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
       });
     }
   }
-  // ===============================================================
 
   @override
   void initState() {
@@ -90,67 +94,109 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
   }
 
   String get buttonText {
-    if (courseCompleted) {
-      return 'Review Course';
-    }
-    if (lastLessonIndex > 0) {
-      return 'Continue Learning';
-    }
+    if (courseCompleted) return 'Review Course';
+    if (lastLessonIndex > 0) return 'Continue Learning';
     return 'Get Started';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF2C2C2E),
+      backgroundColor: bgLight,
+      appBar: AppBar(
+        backgroundColor: bgLight,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        iconTheme: const IconThemeData(color: textDark),
+        title: Text(
+          'Course Overview',
+          style: GoogleFonts.poppins(
+            color: textDark,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ================= TITLE =================
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: surfaceLight,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: borderLight),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.course.title,
+                      style: GoogleFonts.poppins(
+                        color: textDark,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        _chip(widget.course.level),
+                        const SizedBox(width: 8),
+                        Text(
+                          widget.course.duration,
+                          style: GoogleFonts.poppins(
+                            color: subTextLight,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      'Overview',
+                      style: GoogleFonts.poppins(
+                        color: textDark,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      widget.course.overview,
+                      style: GoogleFonts.poppins(
+                        color: subTextLight,
+                        fontSize: 14,
+                        height: 1.6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
               Text(
-                widget.course.title,
+                'Lesson Topics',
                 style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontSize: 22,
+                  color: textDark,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
 
-              const SizedBox(height: 25),
-
-              // ================= OVERVIEW =================
-              Text(
-                'Overview',
-                style: GoogleFonts.poppins(
-                  color: Colors.white70,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                widget.course.overview,
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontSize: 14,
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              // ================= LESSON TOPICS =================
-              Text(
-                'Lesson Topics',
-                style: GoogleFonts.poppins(
-                  color: Colors.white70,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
 
               Expanded(
                 child: isLoadingLessons
@@ -164,7 +210,7 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
                   child: Text(
                     'No lessons available for this course yet.',
                     style: GoogleFonts.poppins(
-                      color: Colors.white70,
+                      color: subTextLight,
                       fontSize: 14,
                     ),
                     textAlign: TextAlign.center,
@@ -174,37 +220,85 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
                   itemCount: lessons.length,
                   itemBuilder: (context, index) {
                     final lesson = lessons[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white12,
-                          borderRadius: BorderRadius.circular(14),
+                    final isCurrent = index == lastLessonIndex;
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: surfaceLight,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: isCurrent
+                              ? const Color(0xFFD9B1F2)
+                              : borderLight,
                         ),
-                        child: Text(
-                          '${lesson.order}. ${lesson.title}',
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 14,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.035),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
-                        ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            height: 40,
+                            width: 40,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF4E8FA),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${lesson.order}',
+                                style: GoogleFonts.poppins(
+                                  color: const Color(0xFFA822D9),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Text(
+                              lesson.title,
+                              style: GoogleFonts.poppins(
+                                color: textDark,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          if (isCurrent)
+                            Text(
+                              'Current',
+                              style: GoogleFonts.poppins(
+                                color: const Color(0xFFA822D9),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                        ],
                       ),
                     );
                   },
                 ),
               ),
 
-              // ================= BUTTON =================
+              const SizedBox(height: 12),
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
                     backgroundColor: const Color(0xFFA822D9),
                     foregroundColor: Colors.white,
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                   onPressed: lessons.isEmpty
@@ -228,7 +322,6 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
 
                     if (result != null && result is int) {
                       await loadProgress();
-
                       setState(() {
                         lastLessonIndex = result;
                       });
@@ -245,6 +338,24 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _chip(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4E8FA),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.poppins(
+          color: const Color(0xFFA822D9),
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );

@@ -48,9 +48,9 @@ class _CoursesScreenState extends State<CoursesScreen> {
         return Course(
           id: doc.id,
           title: data['title'] ?? '',
-          overview: data['overview'] ?? '',
+          overview: data['description'] ?? '',
           level: data['level'] ?? '',
-          duration: data['duration'] ?? '',
+          duration: data['estimatedDuration'] ?? '',
           lessons: const [], // lessons will be fetched later in course_overview.dart
         );
       }).toList();
