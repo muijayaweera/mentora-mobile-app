@@ -18,6 +18,11 @@ class _CoursesScreenState extends State<CoursesScreen> {
   List<Course> allCourses = [];
   Map<String, dynamic> courseProgressMap = {};
   bool isLoading = true;
+  String searchQuery = '';
+
+  static const Color primaryPurple = Color(0xFFA822D9);
+  static const Color primaryPink = Color(0xFFC514C2);
+  static const Color softBg = Color(0xFFF8F7FA);
 
   @override
   void initState() {
@@ -29,18 +34,10 @@ class _CoursesScreenState extends State<CoursesScreen> {
     try {
       final user = FirebaseAuth.instance.currentUser;
 
-      // 1) Fetch published courses from Firestore
       final coursesSnapshot = await FirebaseFirestore.instance
           .collection('courses')
           .where('status', isEqualTo: 'published')
           .get();
-
-      debugPrint('Courses found: ${coursesSnapshot.docs.length}');
-
-      for (final doc in coursesSnapshot.docs) {
-        debugPrint('Course ID: ${doc.id}');
-        debugPrint('Data: ${doc.data()}');
-      }
 
       final fetchedCourses = coursesSnapshot.docs.map((doc) {
         final data = doc.data();
@@ -51,11 +48,10 @@ class _CoursesScreenState extends State<CoursesScreen> {
           overview: data['description'] ?? '',
           level: data['level'] ?? '',
           duration: data['estimatedDuration'] ?? '',
-          lessons: const [], // lessons will be fetched later in course_overview.dart
+          lessons: const [],
         );
       }).toList();
 
-      // 2) Fetch user progress from Firestore
       Map<String, dynamic> progressMap = {};
 
       if (user != null) {
@@ -67,9 +63,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
         if (userDoc.exists) {
           final userData = userDoc.data();
           if (userData != null && userData['courseProgress'] != null) {
-            progressMap = Map<String, dynamic>.from(
-              userData['courseProgress'],
-            );
+            progressMap = Map<String, dynamic>.from(userData['courseProgress']);
           }
         }
       }
@@ -119,11 +113,20 @@ class _CoursesScreenState extends State<CoursesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final filteredCourses = allCourses.where((course) {
+      final query = searchQuery.toLowerCase().trim();
+      if (query.isEmpty) return true;
+
+      return course.title.toLowerCase().contains(query) ||
+          course.overview.toLowerCase().contains(query) ||
+          course.level.toLowerCase().contains(query);
+    }).toList();
+
     final List<Course> suggestedCourses = [];
     final List<Course> inProgressCourses = [];
     final List<Course> completedCourses = [];
 
-    for (final course in allCourses) {
+    for (final course in filteredCourses) {
       final completed = _isCompleted(course.id);
       final lastLessonIndex = _getLastLessonIndex(course.id);
 
@@ -137,125 +140,169 @@ class _CoursesScreenState extends State<CoursesScreen> {
     }
 
     return Scaffold(
-      backgroundColor: bgLight,
+      backgroundColor: softBg,
       body: SafeArea(
         child: isLoading
             ? const Center(
           child: CircularProgressIndicator(
-            color: Color(0xFFA822D9),
+            color: primaryPurple,
           ),
         )
             : allCourses.isEmpty
-            ? Center(
-          child: Text(
-            "No published courses available yet.",
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: subTextLight,
-            ),
-          ),
-        )
-            : SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 32, 24, 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ShaderMask(
-                shaderCallback: (Rect bounds) {
-                  return const LinearGradient(
-                    colors: [Color(0xFFC514C2), Color(0xFFA822D9)],
-                  ).createShader(bounds);
-                },
-                child: Text(
-                  "mentora.",
-                  style: GoogleFonts.poppins(
-                    fontSize: 30,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+            ? _emptyState("No published courses available yet.")
+            : RefreshIndicator(
+          color: primaryPurple,
+          onRefresh: fetchCoursesAndProgress,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: ShaderMask(
+                    shaderCallback: (Rect bounds) {
+                      return const LinearGradient(
+                        colors: [Color(0xFFC514C2), Color(0xFFA822D9)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ).createShader(bounds);
+                    },
+                    child: Text(
+                      "mentora.",
+                      style: GoogleFonts.poppins(
+                        fontSize: 27,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: -0.6,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 10),
+                const SizedBox(height: 26),
 
-              Text(
-                "Courses",
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: textDark,
-                ),
-              ),
+                _searchBar(),
 
-              const SizedBox(height: 6),
+                const SizedBox(height: 28),
 
-              Text(
-                "Continue learning through guided ostomy care modules.",
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  color: subTextLight,
-                  height: 1.5,
-                ),
-              ),
+                if (filteredCourses.isEmpty)
+                  _emptyState("No courses matched your search.")
+                else ...[
+                  if (suggestedCourses.isNotEmpty) ...[
+                    _sectionTitle("Suggested For You"),
+                    const SizedBox(height: 14),
+                    ...suggestedCourses.map(
+                          (course) => _courseTile(
+                        context,
+                        course,
+                        statusLabel: "Start",
+                        statusIcon: Icons.play_arrow_rounded,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
 
-              const SizedBox(height: 24),
+                  if (inProgressCourses.isNotEmpty) ...[
+                    _sectionTitle("In Progress"),
+                    const SizedBox(height: 14),
+                    ...inProgressCourses.map(
+                          (course) => _courseTile(
+                        context,
+                        course,
+                        statusLabel: "Continue",
+                        statusIcon: Icons.timelapse_rounded,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
 
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: surfaceLight,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: borderLight),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                  if (completedCourses.isNotEmpty) ...[
+                    _sectionTitle("Completed"),
+                    const SizedBox(height: 14),
+                    ...completedCourses.map(
+                          (course) => _courseTile(
+                        context,
+                        course,
+                        statusLabel: "Completed",
+                        statusIcon: Icons.check_circle_rounded,
+                      ),
                     ),
                   ],
-                ),
-                child: TextField(
-                  style: GoogleFonts.poppins(
-                    color: textDark,
-                    fontSize: 14,
-                  ),
-                  decoration: InputDecoration(
-                    icon: const Icon(Icons.search, color: iconLight),
-                    hintText: "Search courses",
-                    hintStyle: GoogleFonts.poppins(
-                      color: subTextLight,
-                      fontSize: 14,
-                    ),
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              if (suggestedCourses.isNotEmpty) ...[
-                _sectionTitle("Suggested For You"),
-                const SizedBox(height: 14),
-                ...suggestedCourses
-                    .map((course) => _courseTile(context, course)),
-                const SizedBox(height: 26),
+                ],
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
-              if (inProgressCourses.isNotEmpty) ...[
-                _sectionTitle("In Progress"),
-                const SizedBox(height: 14),
-                ...inProgressCourses
-                    .map((course) => _courseTile(context, course)),
-                const SizedBox(height: 26),
-              ],
-
-              if (completedCourses.isNotEmpty) ...[
-                _sectionTitle("Completed"),
-                const SizedBox(height: 14),
-                ...completedCourses
-                    .map((course) => _courseTile(context, course)),
-              ],
-            ],
+  Widget _searchBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: primaryPurple.withOpacity(0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: TextField(
+        onChanged: (value) {
+          setState(() {
+            searchQuery = value;
+          });
+        },
+        style: GoogleFonts.poppins(
+          color: textDark,
+          fontSize: 14,
+        ),
+        decoration: InputDecoration(
+          hintText: "Search courses",
+          hintStyle: GoogleFonts.poppins(
+            color: subTextLight,
+            fontSize: 14,
+          ),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            color: primaryPurple,
+            size: 22,
+          ),
+          suffixIcon: searchQuery.isEmpty
+              ? null
+              : IconButton(
+            icon: const Icon(
+              Icons.close_rounded,
+              color: subTextLight,
+              size: 20,
+            ),
+            onPressed: () {
+              setState(() {
+                searchQuery = '';
+              });
+            },
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 15,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide.none,
           ),
         ),
       ),
@@ -268,12 +315,19 @@ class _CoursesScreenState extends State<CoursesScreen> {
       style: GoogleFonts.poppins(
         color: textDark,
         fontSize: 16,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
       ),
     );
   }
 
-  Widget _courseTile(BuildContext context, Course course) {
+  Widget _courseTile(
+      BuildContext context,
+      Course course, {
+        required String statusLabel,
+        required IconData statusIcon,
+      }) {
+    final completed = _isCompleted(course.id);
+
     return GestureDetector(
       onTap: () async {
         await Navigator.push(
@@ -283,42 +337,47 @@ class _CoursesScreenState extends State<CoursesScreen> {
           ),
         );
 
-        // Refresh progress after returning from course overview / lessons
         fetchCoursesAndProgress();
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: surfaceLight,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: borderLight),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: completed
+                ? Colors.green.withOpacity(0.25)
+                : primaryPurple.withOpacity(0.08),
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              height: 48,
-              width: 48,
+              height: 50,
+              width: 50,
               decoration: BoxDecoration(
-                color: const Color(0xFFF4E8FA),
-                borderRadius: BorderRadius.circular(14),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: primaryPurple.withOpacity(0.15),
+                ),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.menu_book_rounded,
-                color: Color(0xFFA822D9),
+                color: primaryPurple,
                 size: 24,
               ),
             ),
-
-            const SizedBox(width: 14),
+            const SizedBox(width: 15),
 
             Expanded(
               child: Column(
@@ -326,36 +385,46 @@ class _CoursesScreenState extends State<CoursesScreen> {
                 children: [
                   Text(
                     course.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.poppins(
                       color: textDark,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w700,
+                      height: 1.35,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      _badge(course.level),
-                      const SizedBox(width: 8),
-                      Text(
-                        course.duration,
-                        style: GoogleFonts.poppins(
-                          color: subTextLight,
-                          fontSize: 12,
-                        ),
-                      ),
+                      if (course.level.trim().isNotEmpty)
+                        _badge(course.level),
+                      if (course.duration.trim().isNotEmpty)
+                        _durationBadge(course.duration),
+                      _statusBadge(statusLabel, statusIcon, completed),
                     ],
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
 
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 16,
-              color: iconLight,
+            Container(
+              height: 32,
+              width: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.75),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 14,
+                color: primaryPurple,
+              ),
             ),
           ],
         ),
@@ -367,15 +436,91 @@ class _CoursesScreenState extends State<CoursesScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFFF4E8FA),
+        color: primaryPurple.withOpacity(0.10),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         text,
         style: GoogleFonts.poppins(
-          color: const Color(0xFFA822D9),
+          color: primaryPurple,
           fontSize: 11,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _durationBadge(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.75),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.access_time_rounded,
+            size: 13,
+            color: subTextLight,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: GoogleFonts.poppins(
+              color: subTextLight,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _statusBadge(String text, IconData icon, bool completed) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: completed
+            ? Colors.green.withOpacity(0.10)
+            : primaryPink.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 13,
+            color: completed ? Colors.green : primaryPink,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: GoogleFonts.poppins(
+              color: completed ? Colors.green : primaryPink,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _emptyState(String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 80),
+        child: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            color: subTextLight,
+          ),
         ),
       ),
     );
