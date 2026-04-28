@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/lesson.dart';
+import '../models/quiz_question.dart';
+import 'quiz_screen.dart';
 
 // 🔥 Firebase
 import 'package:firebase_auth/firebase_auth.dart';
@@ -26,6 +28,7 @@ class LessonScreen extends StatefulWidget {
 
 class _LessonScreenState extends State<LessonScreen> {
   late int currentIndex;
+  bool isCheckingQuiz = false;
 
   @override
   void initState() {
@@ -48,6 +51,80 @@ class _LessonScreenState extends State<LessonScreen> {
       },
       SetOptions(merge: true),
     );
+  }
+
+  Future<List<QuizQuestion>> fetchQuizQuestions(String lessonId) async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('courses')
+        .doc(widget.courseId)
+        .collection('modules')
+        .doc(lessonId)
+        .collection('questions')
+        .get();
+
+    return snapshot.docs.map((doc) => QuizQuestion.fromDoc(doc)).toList();
+  }
+
+  Future<void> openQuizThenProceed({required bool completeCourse}) async {
+    final lesson = widget.allLessons[currentIndex];
+
+    setState(() {
+      isCheckingQuiz = true;
+    });
+
+    try {
+      print("COURSE ID USED BY APP: ${widget.courseId}");
+      print("LESSON ID USED BY APP: ${lesson.id}");
+      final questions = await fetchQuizQuestions(lesson.id);
+      print("QUESTIONS FOUND: ${questions.length}");
+
+      if (!mounted) return;
+
+      setState(() {
+        isCheckingQuiz = false;
+      });
+
+      if (questions.isNotEmpty) {
+        final quizFinished = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => QuizScreen(
+              courseId: widget.courseId,
+              lessonId: lesson.id,
+              lessonTitle: lesson.title,
+              questions: questions,
+            ),
+          ),
+        );
+
+        if (quizFinished != true) return;
+      }
+
+      if (completeCourse) {
+        await saveProgress(completed: true);
+        if (!mounted) return;
+        Navigator.pop(context, currentIndex);
+      } else {
+        setState(() {
+          currentIndex++;
+        });
+        await saveProgress();
+      }
+    } catch (e) {
+      debugPrint('Error opening quiz: $e');
+
+      if (!mounted) return;
+
+      setState(() {
+        isCheckingQuiz = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not load quiz. Please try again.'),
+        ),
+      );
+    }
   }
 
   @override
@@ -168,7 +245,13 @@ class _LessonScreenState extends State<LessonScreen> {
 
                 const SizedBox(height: 18),
 
-                if (isLastLesson)
+                if (isCheckingQuiz)
+                  const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFFA822D9),
+                    ),
+                  )
+                else if (isLastLesson)
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -182,8 +265,7 @@ class _LessonScreenState extends State<LessonScreen> {
                         ),
                       ),
                       onPressed: () async {
-                        await saveProgress(completed: true);
-                        Navigator.pop(context, currentIndex);
+                        await openQuizThenProceed(completeCourse: true);
                       },
                       child: Text(
                         'Complete Module',
@@ -241,10 +323,7 @@ class _LessonScreenState extends State<LessonScreen> {
                             ),
                           ),
                           onPressed: () async {
-                            setState(() {
-                              currentIndex++;
-                            });
-                            await saveProgress();
+                            await openQuizThenProceed(completeCourse: false);
                           },
                           child: Text(
                             'Next Lesson',
