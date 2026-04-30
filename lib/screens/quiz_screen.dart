@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../constants/ui_constants.dart';
 import '../models/quiz_question.dart';
+import '../models/badge_award.dart';
 
 class QuizScreen extends StatefulWidget {
   final String courseId;
@@ -72,13 +73,149 @@ class _QuizScreenState extends State<QuizScreen> {
       selectedIndex: index,
       isCorrect: isCorrect,
     );
+
+
   }
 
-  void goToNextQuestion() {
+  Future<bool> hasBadge(String badgeId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return true;
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('badges')
+        .doc(badgeId)
+        .get();
+
+    return doc.exists;
+  }
+
+  Future<void> awardBadge(BadgeAward badge) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final alreadyEarned = await hasBadge(badge.id);
+    if (alreadyEarned) return;
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('badges')
+        .doc(badge.id)
+        .set({
+      'title': badge.title,
+      'description': badge.description,
+      'icon': badge.icon,
+      'type': badge.type,
+      'courseId': widget.courseId,
+      'lessonId': widget.lessonId,
+      'earnedAt': FieldValue.serverTimestamp(),
+    });
+
+    if (!mounted) return;
+
+    showBadgeDialog(badge);
+  }
+
+  void showBadgeDialog(BadgeAward badge) {
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: Text(
+            'Badge Unlocked!',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                badge.icon,
+                style: const TextStyle(fontSize: 48),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                badge.title,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                badge.description,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: subTextLight,
+                ),
+              ),
+            ],
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFA822D9),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Yay!',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> checkQuizBadges() async {
+    final totalQuestions = widget.questions.length;
+
+    await awardBadge(
+      BadgeAward(
+        id: 'quiz_starter',
+        title: 'Quiz Starter',
+        description: 'You completed your first quick check.',
+        icon: '🔥',
+        type: 'quiz',
+      ),
+    );
+
+    if (correctCount == totalQuestions) {
+      await awardBadge(
+        BadgeAward(
+          id: 'perfect_quiz_${widget.courseId}_${widget.lessonId}',
+          title: 'Perfect Quiz',
+          description: 'You answered all questions correctly in this lesson.',
+          icon: '🎯',
+          type: 'quiz',
+        ),
+      );
+    }
+  }
+
+  Future<void> goToNextQuestion() async {
     final isLastQuestion =
         currentQuestionIndex == widget.questions.length - 1;
 
     if (isLastQuestion) {
+      await checkQuizBadges();
+
+      if (!mounted) return;
       Navigator.pop(context, true);
       return;
     }
@@ -261,7 +398,7 @@ class _QuizScreenState extends State<QuizScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: hasAnswered ? goToNextQuestion : null,
+                  onPressed: hasAnswered ? () async => await goToNextQuestion() : null,
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
                     backgroundColor: const Color(0xFFA822D9),
