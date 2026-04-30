@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../constants/ui_constants.dart';
 import '../models/course.dart';
 import 'course_overview.dart';
+import 'badge_details_screen.dart';
 
 class CoursesScreen extends StatefulWidget {
   const CoursesScreen({super.key});
@@ -15,6 +16,7 @@ class CoursesScreen extends StatefulWidget {
 }
 
 class _CoursesScreenState extends State<CoursesScreen> {
+  int badgeCount = 0;
   List<Course> allCourses = [];
   Map<String, dynamic> courseProgressMap = {};
   bool isLoading = true;
@@ -54,6 +56,18 @@ class _CoursesScreenState extends State<CoursesScreen> {
 
       Map<String, dynamic> progressMap = {};
 
+      int fetchedBadgeCount = 0;
+
+      if (user != null) {
+        final badgeSnap = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('badges')
+            .get();
+
+        fetchedBadgeCount = badgeSnap.docs.length;
+      }
+
       if (user != null) {
         final userDoc = await FirebaseFirestore.instance
             .collection('users')
@@ -71,6 +85,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
       setState(() {
         allCourses = fetchedCourses;
         courseProgressMap = progressMap;
+        badgeCount = fetchedBadgeCount;
         isLoading = false;
       });
     } catch (e) {
@@ -184,6 +199,90 @@ class _CoursesScreenState extends State<CoursesScreen> {
 
                 _searchBar(),
 
+                if (badgeCount > 0)
+                  GestureDetector(
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const BadgeDetailsScreen(),
+                        ),
+                      );
+
+                      fetchCoursesAndProgress();
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(top: 18, bottom: 24),
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            primaryPurple.withOpacity(0.12),
+                            primaryPink.withOpacity(0.08),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: primaryPurple.withOpacity(0.10)),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            height: 48,
+                            width: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.85),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(
+                              Icons.emoji_events_rounded,
+                              color: primaryPurple,
+                              size: 26,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Achievements',
+                                  style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 15.5,
+                                    color: textDark,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '$badgeCount earned • Tap to view badges',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12.5,
+                                    color: subTextLight,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            height: 34,
+                            width: 34,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.85),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 14,
+                              color: primaryPurple,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 28),
 
                 if (filteredCourses.isEmpty)

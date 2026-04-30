@@ -3,11 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/lesson.dart';
 import '../models/quiz_question.dart';
 import 'quiz_screen.dart';
+import '../models/badge_award.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../constants/ui_constants.dart';
+
 
 class LessonScreen extends StatefulWidget {
   final List<Lesson> allLessons;
@@ -75,6 +77,121 @@ class _LessonScreenState extends State<LessonScreen> {
     );
   }
 
+  Future<bool> hasBadge(String badgeId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return true;
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('badges')
+        .doc(badgeId)
+        .get();
+
+    return doc.exists;
+  }
+
+  Future<void> awardBadge(BadgeAward badge) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final alreadyEarned = await hasBadge(badge.id);
+    if (alreadyEarned) return;
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('badges')
+        .doc(badge.id)
+        .set({
+      'title': badge.title,
+      'description': badge.description,
+      'icon': badge.icon,
+      'type': badge.type,
+      'courseId': widget.courseId,
+      'earnedAt': FieldValue.serverTimestamp(),
+    });
+
+    if (!mounted) return;
+    await showBadgeDialog(badge);
+  }
+
+  Future<void> showBadgeDialog(BadgeAward badge) async {
+    if (!mounted) return;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: Text(
+            'Badge Unlocked!',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(badge.icon, style: const TextStyle(fontSize: 50)),
+              const SizedBox(height: 12),
+              Text(
+                badge.title,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                badge.description,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: subTextLight,
+                ),
+              ),
+            ],
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFA822D9),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: Text(
+                'Yay!',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> checkCourseCompletionBadge() async {
+    await awardBadge(
+      BadgeAward(
+        id: 'course_completed_${widget.courseId}',
+        title: 'Course Completed',
+        description: 'You completed all lessons in this course.',
+        icon: '📘',
+        type: 'course',
+      ),
+    );
+  }
+
   Future<List<QuizQuestion>> fetchQuizQuestions(String lessonId) async {
     final snapshot = await FirebaseFirestore.instance
         .collection('courses')
@@ -121,8 +238,12 @@ class _LessonScreenState extends State<LessonScreen> {
 
       if (completeCourse) {
         await saveProgress(completed: true);
+
         if (!mounted) return;
-        Navigator.pop(context, currentIndex);
+        await checkCourseCompletionBadge();
+
+        if (!mounted) return;
+        Navigator.of(context).pop(currentIndex);
       } else {
         setState(() {
           currentIndex++;

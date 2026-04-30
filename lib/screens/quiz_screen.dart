@@ -115,13 +115,16 @@ class _QuizScreenState extends State<QuizScreen> {
 
     if (!mounted) return;
 
-    showBadgeDialog(badge);
+    await showBadgeDialog(badge);
   }
 
-  void showBadgeDialog(BadgeAward badge) {
-    showDialog(
+  Future<void> showBadgeDialog(BadgeAward badge) async {
+    if (!mounted) return;
+
+    await showDialog(
       context: context,
-      builder: (_) {
+      barrierDismissible: false,
+      builder: (dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
@@ -129,17 +132,12 @@ class _QuizScreenState extends State<QuizScreen> {
           title: Text(
             'Badge Unlocked!',
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w700,
-            ),
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                badge.icon,
-                style: const TextStyle(fontSize: 48),
-              ),
+              Text(badge.icon, style: const TextStyle(fontSize: 50)),
               const SizedBox(height: 12),
               Text(
                 badge.title,
@@ -170,7 +168,9 @@ class _QuizScreenState extends State<QuizScreen> {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
               child: Text(
                 'Yay!',
                 style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
@@ -216,7 +216,7 @@ class _QuizScreenState extends State<QuizScreen> {
       await checkQuizBadges();
 
       if (!mounted) return;
-      Navigator.pop(context, true);
+      Navigator.of(context).pop(true);
       return;
     }
 
@@ -261,9 +261,7 @@ class _QuizScreenState extends State<QuizScreen> {
   Widget build(BuildContext context) {
     final progressValue =
         (currentQuestionIndex + 1) / widget.questions.length;
-    print("CURRENT QUESTION: ${currentQuestion.questionText}");
-    print("OPTIONS COUNT: ${currentQuestion.options.length}");
-    print("OPTIONS: ${currentQuestion.options}");
+
 
     return Scaffold(
       backgroundColor: bgLight,
