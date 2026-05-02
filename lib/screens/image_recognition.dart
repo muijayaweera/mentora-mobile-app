@@ -10,6 +10,10 @@ import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+
 import '../constants/ui_constants.dart';
 
 class ImageRecognitionScreen extends StatefulWidget {
@@ -50,6 +54,47 @@ class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
     _imageFile = widget.imageFile;
     _webImage = widget.webImage;
     _initModel();
+  }
+
+  Future<void> _saveImageReview({
+    required File imageFile,
+    required String prediction,
+    required double confidence,
+  }) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+
+      final fileName =
+          'image_reviews/${user?.uid ?? "unknown"}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      final ref = FirebaseStorage.instance.ref().child(fileName);
+
+      await ref.putFile(imageFile);
+
+      final imageUrl = await ref.getDownloadURL();
+
+      await FirebaseFirestore.instance.collection('imageReviews').add({
+        'imageUrl': imageUrl,
+
+        // uploader details
+        'uploadedBy': user?.email ?? 'Unknown user',
+        'uploadedByName': user?.displayName ?? 'Unknown Nurse',
+        'uploadedByUid': user?.uid,
+
+        'prediction': _prettyLabel(prediction),
+        'confidence': (confidence * 100).round(),
+        'status': 'Pending Review',
+        'notes': prediction == 'invalid_image'
+            ? 'Image was marked as unrecognized by the model.'
+            : 'Submitted from mobile image analysis.',
+        'uploadedOn': FieldValue.serverTimestamp(),
+        'adminLabel': '',
+      });
+
+      debugPrint("Image review saved successfully");
+    } catch (e) {
+      debugPrint("Failed to save image review: $e");
+    }
   }
 
   Future<void> _initModel() async {
@@ -191,6 +236,18 @@ class _ImageRecognitionScreenState extends State<ImageRecognitionScreen> {
       debugPrint("Prediction: $_predLabel");
       debugPrint("Confidence: $_predConfidence");
       debugPrint("Scores: $scores");
+
+      if (_imageFile != null &&
+          _predLabel != null &&
+          _predConfidence != null &&
+          _predLabel != "invalid_image") {
+        await _saveImageReview(
+          imageFile: _imageFile!,
+          prediction: _predLabel!,
+          confidence: _predConfidence!,
+        );
+      }
+
     } catch (e) {
       setState(() => _running = false);
       debugPrint("Inference error: $e");
