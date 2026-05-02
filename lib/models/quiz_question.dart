@@ -7,6 +7,7 @@ class QuizQuestion {
   final int correctAnswerIndex;
   final String explanation;
   final int order;
+  final String imageUrl;
 
   QuizQuestion({
     required this.id,
@@ -15,6 +16,7 @@ class QuizQuestion {
     required this.correctAnswerIndex,
     required this.explanation,
     required this.order,
+    required this.imageUrl,
   });
 
   factory QuizQuestion.fromDoc(DocumentSnapshot doc) {
@@ -34,6 +36,7 @@ class QuizQuestion {
       correctAnswerIndex: data['correctAnswerIndex'] ?? 0,
       explanation: data['explanation'] ?? '',
       order: data['order'] ?? 0,
+      imageUrl: data['imageUrl'] ?? '',
     );
   }
 }

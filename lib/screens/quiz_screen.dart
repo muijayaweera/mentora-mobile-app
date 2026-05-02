@@ -330,6 +330,46 @@ class _QuizScreenState extends State<QuizScreen> {
 
               const SizedBox(height: 22),
 
+              if (currentQuestion.imageUrl.isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: Image.network(
+                      currentQuestion.imageUrl,
+                      height: 190,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          height: 150,
+                          color: const Color(0xFFF1F1F3),
+                          child: Center(
+                            child: Text(
+                              'Image could not be loaded',
+                              style: GoogleFonts.poppins(
+                                color: subTextLight,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
               Text(
                 currentQuestion.questionText,
                 style: GoogleFonts.poppins(
