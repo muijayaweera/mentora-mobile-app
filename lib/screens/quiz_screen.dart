@@ -48,12 +48,38 @@ class _QuizScreenState extends State<QuizScreen> {
         .add({
       'courseId': widget.courseId,
       'lessonId': widget.lessonId,
+      'lessonTitle': widget.lessonTitle,
       'questionId': question.id,
       'questionText': question.questionText,
       'selectedAnswerIndex': selectedIndex,
       'correctAnswerIndex': question.correctAnswerIndex,
       'isCorrect': isCorrect,
       'answeredAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> saveQuizSummary() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final totalQuestions = widget.questions.length;
+    final wrongCount = totalQuestions - correctCount;
+    final scorePercentage =
+    totalQuestions == 0 ? 0 : ((correctCount / totalQuestions) * 100).round();
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('quizSummaries')
+        .add({
+      'courseId': widget.courseId,
+      'lessonId': widget.lessonId,
+      'lessonTitle': widget.lessonTitle,
+      'totalQuestions': totalQuestions,
+      'correctAnswers': correctCount,
+      'wrongAnswers': wrongCount,
+      'scorePercentage': scorePercentage,
+      'completedAt': FieldValue.serverTimestamp(),
     });
   }
 
@@ -73,8 +99,6 @@ class _QuizScreenState extends State<QuizScreen> {
       selectedIndex: index,
       isCorrect: isCorrect,
     );
-
-
   }
 
   Future<bool> hasBadge(String badgeId) async {
@@ -114,7 +138,6 @@ class _QuizScreenState extends State<QuizScreen> {
     });
 
     if (!mounted) return;
-
     await showBadgeDialog(badge);
   }
 
@@ -213,6 +236,7 @@ class _QuizScreenState extends State<QuizScreen> {
         currentQuestionIndex == widget.questions.length - 1;
 
     if (isLastQuestion) {
+      await saveQuizSummary();
       await checkQuizBadges();
 
       if (!mounted) return;
@@ -261,7 +285,6 @@ class _QuizScreenState extends State<QuizScreen> {
   Widget build(BuildContext context) {
     final progressValue =
         (currentQuestionIndex + 1) / widget.questions.length;
-
 
     return Scaffold(
       backgroundColor: bgLight,
@@ -436,7 +459,8 @@ class _QuizScreenState extends State<QuizScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: hasAnswered ? () async => await goToNextQuestion() : null,
+                  onPressed:
+                  hasAnswered ? () async => await goToNextQuestion() : null,
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
                     backgroundColor: const Color(0xFFA822D9),
