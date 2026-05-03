@@ -37,6 +37,7 @@ class HomeScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(28, 26, 28, 28),
                 child: Column(
+                  //crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -89,7 +90,7 @@ class HomeScreen extends StatelessWidget {
                       'Welcome, $name.',
                       style: GoogleFonts.poppins(
                         fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         color: textDark,
                       ),
                     ),
