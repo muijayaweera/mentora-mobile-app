@@ -65,6 +65,7 @@ class _CourseOverviewScreenState extends State<CourseOverviewScreen> {
           title: data['title'] ?? '',
           content: data['contentText'] ?? '',
           order: data['order'] ?? 0,
+          videoUrl: data['videoUrl'] ?? '',
         );
       }).toList();
 

@@ -7,7 +7,7 @@ import '../models/badge_award.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../constants/ui_constants.dart';
 
 
@@ -29,6 +29,7 @@ class LessonScreen extends StatefulWidget {
 
 class _LessonScreenState extends State<LessonScreen> {
   final ScrollController _scrollController = ScrollController();
+  YoutubePlayerController? _youtubeController;
   late int currentIndex;
   bool isCheckingQuiz = false;
 
@@ -40,10 +41,12 @@ class _LessonScreenState extends State<LessonScreen> {
   void initState() {
     super.initState();
     currentIndex = widget.startIndex;
+    _setupYoutubeController();
   }
 
   @override
   void dispose() {
+    _youtubeController?.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -58,6 +61,36 @@ class _LessonScreenState extends State<LessonScreen> {
         );
       }
     });
+  }
+
+  void _setupYoutubeController() {
+    _youtubeController?.dispose();
+    _youtubeController = null;
+
+    final lesson = widget.allLessons[currentIndex];
+
+    if (lesson.videoUrl.isEmpty) return;
+
+    final videoId = YoutubePlayer.convertUrlToId(lesson.videoUrl);
+
+    if (videoId == null) return;
+
+    _youtubeController = YoutubePlayerController(
+      initialVideoId: videoId,
+      flags: const YoutubePlayerFlags(
+        autoPlay: false,
+        mute: false,
+      ),
+    );
+  }
+
+  void _changeLesson(int newIndex) {
+    setState(() {
+      currentIndex = newIndex;
+      _setupYoutubeController();
+    });
+
+    _scrollToTop();
   }
 
   Future<void> saveProgress({bool completed = false}) async {
@@ -245,11 +278,8 @@ class _LessonScreenState extends State<LessonScreen> {
         if (!mounted) return;
         Navigator.of(context).pop(currentIndex);
       } else {
-        setState(() {
-          currentIndex++;
-        });
+        _changeLesson(currentIndex + 1);
         await saveProgress();
-        _scrollToTop();
       }
     } catch (e) {
       debugPrint('Error opening quiz: $e');
@@ -333,14 +363,30 @@ class _LessonScreenState extends State<LessonScreen> {
                     ),
                     child: SingleChildScrollView(
                       controller: _scrollController,
-                      child: Text(
-                        lesson.content,
-                        style: GoogleFonts.poppins(
-                          color: Colors.black87,
-                          fontSize: 14.5,
-                          height: 1.75,
-                          fontWeight: FontWeight.w400,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (_youtubeController != null) ...[
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(18),
+                              child: YoutubePlayer(
+                                controller: _youtubeController!,
+                                showVideoProgressIndicator: true,
+                                progressIndicatorColor: primaryPurple,
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                          ],
+                          Text(
+                            lesson.content,
+                            style: GoogleFonts.poppins(
+                              color: Colors.black87,
+                              fontSize: 14.5,
+                              height: 1.75,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -380,11 +426,8 @@ class _LessonScreenState extends State<LessonScreen> {
                               ),
                             ),
                             onPressed: () async {
-                              setState(() {
-                                currentIndex--;
-                              });
+                              _changeLesson(currentIndex - 1);
                               await saveProgress();
-                              _scrollToTop();
                             },
                             child: Text(
                               'Previous',
