@@ -11,29 +11,79 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
   bool isLoading = false;
   bool showPassword = false;
 
+  bool isValidEmail(String email) {
+    return RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,}$').hasMatch(email);
+  }
+
+  void showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   Future<void> login() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      showMessage('Please enter your email and password.');
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      showMessage('Please enter a valid email address.');
+      return;
+    }
+
     try {
       setState(() => isLoading = true);
 
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
+        email: email,
+        password: password,
       );
 
+      if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/home');
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'Login failed')),
-      );
+      showMessage(e.message ?? 'Login failed. Please try again.');
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) setState(() => isLoading = false);
     }
+  }
+
+  Future<void> forgotPassword() async {
+    final email = emailController.text.trim();
+
+    if (email.isEmpty) {
+      showMessage('Enter your email first to reset your password.');
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      showMessage('Please enter a valid email address.');
+      return;
+    }
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      showMessage('Password reset email sent. Please check your inbox.');
+    } on FirebaseAuthException catch (e) {
+      showMessage(e.message ?? 'Could not send reset email.');
+    }
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -41,170 +91,168 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: bgLight,
       body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 44),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(28, 34, 28, 28),
+          child: Column(
+            children: [
+              const SizedBox(height: 8),
 
-            ShaderMask(
-              shaderCallback: (bounds) => const LinearGradient(
-                colors: [Color(0xFFC514C2), Color(0xFFA822D9)],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ).createShader(bounds),
-              child: Text(
-                'mentora.',
+              ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [Color(0xFFC514C2), Color(0xFFA822D9)],
+                ).createShader(bounds),
+                child: Text(
+                  'mentora.',
+                  style: GoogleFonts.poppins(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 34),
+
+              SizedBox(
+                height: 130,
+                width: 130,
+                child: Image.asset(
+                  'assets/images/home_orb1.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              Text(
+                'Welcome back',
+                textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: textDark,
+                  fontSize: 25,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: -0.4,
                 ),
               ),
-            ),
 
-            const SizedBox(height: 44),
+              const SizedBox(height: 8),
 
-            Container(
-              height: 120,
-              width: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: purple,
-                  width: 6,
+              Text(
+                'Continue your ostomy care learning journey.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  color: subTextLight,
+                  fontSize: 13,
+                  height: 1.5,
                 ),
               ),
-            ),
 
-            const SizedBox(height: 40),
+              const SizedBox(height: 40),
 
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(36),
+              _inputField(
+                controller: emailController,
+                icon: Icons.email_outlined,
+                hint: 'E-mail',
+                keyboardType: TextInputType.emailAddress,
+              ),
+
+              const SizedBox(height: 18),
+
+              _inputField(
+                controller: passwordController,
+                icon: Icons.lock_outline,
+                hint: 'Password',
+                isPassword: true,
+                showText: showPassword,
+                toggleShowText: () {
+                  setState(() => showPassword = !showPassword);
+                },
+              ),
+
+              const SizedBox(height: 12),
+
+              Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: forgotPassword,
+                  child: Text(
+                    'Forgot password?',
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFFA822D9),
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
+              ),
+
+              const SizedBox(height: 30),
+
+              GestureDetector(
+                onTap: isLoading ? null : login,
                 child: Container(
+                  height: 54,
                   width: double.infinity,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/loginn.png'),
-                      fit: BoxFit.cover,
-                    ),
+                  decoration: BoxDecoration(
+                    gradient: buttonGradient,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFA822D9).withOpacity(0.24),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(20, 26, 20, 24),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.82),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Center(
-                          child: Text(
-                            'Sign in to your account',
-                            style: GoogleFonts.poppins(
-                              color: textDark,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 26),
-
-                        Center(
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.85,
-                            child: _inputField(
-                              controller: emailController,
-                              icon: Icons.email_outlined,
-                              hint: 'Enter your email',
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 22),
-
-                        Center(
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.85,
-                            child: _inputField(
-                              controller: passwordController,
-                              icon: Icons.lock_outline,
-                              hint: 'Enter your password',
-                              isPassword: true,
-                              showText: showPassword,
-                              toggleShowText: () {
-                                setState(() => showPassword = !showPassword);
-                              },
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 24),
-                            child: Text(
-                              'Forgot Password?',
-                              style: GoogleFonts.poppins(
-                                color: subTextLight,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 28),
-
-                        Center(
-                          child: GestureDetector(
-                            onTap: login,
-                            child: Container(
-                              height: 44,
-                              width: MediaQuery.of(context).size.width * 0.85,
-                              decoration: BoxDecoration(
-                                gradient: buttonGradient,
-                                borderRadius: BorderRadius.circular(buttonRadius),
-                              ),
-                              child: Center(
-                                child: isLoading
-                                    ? const CircularProgressIndicator(color: Colors.white)
-                                    : Text(
-                                  'Sign In',
-                                  style: GoogleFonts.poppins(
-                                    color: Colors.white,
-                                    fontSize: 14.5,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        GestureDetector(
-                          onTap: () => Navigator.pushNamed(context, '/signup'),
-                          child: Center(
-                            child: Text(
-                              "Don't have an account? Sign Up!",
-                              style: GoogleFonts.poppins(
-                                color: textDark,
-                                fontSize: 12.5,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                  child: Center(
+                    child: isLoading
+                        ? const SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2.3,
+                      ),
+                    )
+                        : Text(
+                      'Sign In',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 34),
+
+              GestureDetector(
+                onTap: () => Navigator.pushNamed(context, '/signup'),
+                child: RichText(
+                  text: TextSpan(
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: textDark,
+                    ),
+                    children: const [
+                      TextSpan(text: "Don’t have an account? "),
+                      TextSpan(
+                        text: "Sign Up",
+                        style: TextStyle(
+                          color: Color(0xFFA822D9),
+                          fontWeight: FontWeight.w700,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -214,30 +262,63 @@ class _LoginScreenState extends State<LoginScreen> {
     required TextEditingController controller,
     required IconData icon,
     required String hint,
+    TextInputType keyboardType = TextInputType.text,
     bool isPassword = false,
     bool showText = false,
     VoidCallback? toggleShowText,
   }) {
     return TextField(
       controller: controller,
+      keyboardType: keyboardType,
       obscureText: isPassword && !showText,
       style: GoogleFonts.poppins(
-        fontSize: 13,
+        fontSize: 14,
         color: textDark,
       ),
       decoration: InputDecoration(
-        prefixIcon: Icon(icon, size: 20, color: iconLight),
+        filled: true,
+        fillColor: const Color(0xFFF3EEF7),
+        prefixIcon: Icon(
+          icon,
+          color: const Color(0xFF817487),
+          size: 21,
+        ),
         suffixIcon: isPassword
             ? GestureDetector(
           onTap: toggleShowText,
           child: Icon(
-            showText ? Icons.visibility : Icons.visibility_off,
-            size: 18,
-            color: iconLight,
+            showText
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
+            size: 19,
+            color: const Color(0xFF817487),
           ),
         )
             : null,
         hintText: hint,
+        hintStyle: GoogleFonts.poppins(
+          color: const Color(0xFF817487),
+          fontSize: 13.5,
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 17,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(22),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(22),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(22),
+          borderSide: const BorderSide(
+            color: Color(0xFFA822D9),
+            width: 1.3,
+          ),
+        ),
       ),
     );
   }
