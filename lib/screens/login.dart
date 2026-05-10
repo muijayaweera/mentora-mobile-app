@@ -131,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: GoogleFonts.poppins(
                   color: textDark,
                   fontSize: 25,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   letterSpacing: -0.4,
                 ),
               ),
