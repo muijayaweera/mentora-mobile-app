@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../constants/ui_constants.dart';
+import 'badge_details_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   final VoidCallback toggleTheme;
@@ -32,12 +34,13 @@ class HomeScreen extends StatelessWidget {
             }
 
             final data = snapshot.data!.data() as Map<String, dynamic>;
-            final name = data['name'] ?? 'User'; // ✅ ADD THIS LINE
+            final name = data['name'] ?? 'User';
+
             return SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(28, 26, 28, 28),
                 child: Column(
-                  //crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -55,29 +58,35 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ),
                         ),
+
                         Row(
                           children: [
-                            IconButton(
-                              visualDensity: VisualDensity.compact,
-                              onPressed: () {
-                                Navigator.pushNamed(context, '/notifications');
+                            _topIconButton(
+                              icon: Icons.emoji_events_outlined,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                    const BadgeDetailsScreen(),
+                                  ),
+                                );
                               },
-                              icon: const Icon(
-                                Icons.notifications_none_outlined,
-                                color: Color(0xFF676666),
-                                size: 24,
-                              ),
                             ),
-                            IconButton(
-                              visualDensity: VisualDensity.compact,
-                              onPressed: () {
+                            const SizedBox(width: 8),
+                            _topIconButton(
+                              icon: Icons.notifications_none_rounded,
+                              onTap: () {
+                                Navigator.pushNamed(
+                                    context, '/notifications');
+                              },
+                            ),
+                            const SizedBox(width: 8),
+                            _topIconButton(
+                              icon: Icons.person_outline_rounded,
+                              onTap: () {
                                 Navigator.pushNamed(context, '/profile');
                               },
-                              icon: const Icon(
-                                Icons.person_outline,
-                                color: Color(0xFF676666),
-                                size: 24,
-                              ),
                             ),
                           ],
                         ),
@@ -88,14 +97,15 @@ class HomeScreen extends StatelessWidget {
 
                     Text(
                       'Welcome, $name.',
+                      textAlign: TextAlign.left,
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
                         color: textDark,
                       ),
                     ),
-                    const SizedBox(height: 40),
 
+                    const SizedBox(height: 40),
 
                     Center(
                       child: SizedBox(
@@ -110,13 +120,15 @@ class HomeScreen extends StatelessWidget {
 
                     const SizedBox(height: 34),
 
-                    Text(
-                      'Discover something new today.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: const Color(0xFF555555),
+                    Center(
+                      child: Text(
+                        'Discover something new today.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF555555),
+                        ),
                       ),
                     ),
 
@@ -126,10 +138,14 @@ class HomeScreen extends StatelessWidget {
                       onTap: () => Navigator.pushNamed(context, '/courses'),
                       child: Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.fromLTRB(22, 18, 22, 16),
+                        padding:
+                        const EdgeInsets.fromLTRB(22, 18, 22, 16),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFFB86AF2), Color(0xFFA13CF0)],
+                            colors: [
+                              Color(0xFFB86AF2),
+                              Color(0xFFA13CF0)
+                            ],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                           ),
@@ -147,7 +163,8 @@ class HomeScreen extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment:
+                                CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     'Go to Courses',
@@ -194,7 +211,8 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => Navigator.pushNamed(context, '/image'),
+                            onTap: () =>
+                                Navigator.pushNamed(context, '/image'),
                             child: _smallCard(
                               title: 'Image Analysis',
                               description:
@@ -206,7 +224,8 @@ class HomeScreen extends StatelessWidget {
                         const SizedBox(width: 22),
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => Navigator.pushNamed(context, '/chatbot'),
+                            onTap: () =>
+                                Navigator.pushNamed(context, '/chatbot'),
                             child: _smallCard(
                               title: 'Start New Chat',
                               description:
@@ -222,6 +241,38 @@ class HomeScreen extends StatelessWidget {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _topIconButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 42,
+        width: 42,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: const Color(0xFFEAEAEA),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.035),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Icon(
+          icon,
+          color: const Color(0xFF5E5E5E),
+          size: 21,
         ),
       ),
     );
