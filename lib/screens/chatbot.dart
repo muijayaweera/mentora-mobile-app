@@ -55,7 +55,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     try {
       String? chatId = _currentChatId;
 
-      // Try saving user message, but don't break chatbot if history fails
       try {
         chatId ??= await _historyService.createChat(text);
         _currentChatId = chatId;
@@ -77,7 +76,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         _messages.add(ChatMessage(text: reply, isUser: false));
       });
 
-      // Try saving bot reply, but don't break chatbot if history fails
       try {
         if (_currentChatId != null) {
           await _historyService.saveMessage(
@@ -115,8 +113,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   void _safeScrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      if (!_scrollController.hasClients) return;
+      if (!mounted || !_scrollController.hasClients) return;
 
       final position = _scrollController.position;
       if (!position.hasContentDimensions) return;
@@ -167,27 +164,28 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   void _openPreviousChats() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: surfaceLight,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (context) {
         return SizedBox(
           height: MediaQuery.of(context).size.height * 0.68,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+            padding: const EdgeInsets.fromLTRB(22, 18, 22, 20),
             child: Column(
               children: [
                 Container(
                   width: 42,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(0.25),
+                    color: borderLight,
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                const SizedBox(height: 18),
+
+                const SizedBox(height: 20),
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -195,7 +193,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     Text(
                       "Previous Chats",
                       style: GoogleFonts.poppins(
-                        fontSize: 18,
+                        fontSize: 19,
                         fontWeight: FontWeight.w600,
                         color: textDark,
                       ),
@@ -204,8 +202,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                       onTap: _startNewChat,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 7,
+                          horizontal: 13,
+                          vertical: 8,
                         ),
                         decoration: BoxDecoration(
                           gradient: buttonGradient,
@@ -216,7 +214,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                           style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -224,14 +222,18 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 16),
 
                 Expanded(
                   child: StreamBuilder(
                     stream: _historyService.getChats(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFFA822D9),
+                          ),
+                        );
                       }
 
                       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -255,27 +257,28 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                           final data = chat.data();
 
                           return Container(
-                            margin: const EdgeInsets.only(bottom: 10),
+                            margin: const EdgeInsets.only(bottom: 12),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF9F7FB),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: borderLight.withOpacity(0.6),
-                              ),
+                              color: bgLight,
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: borderLight),
                             ),
                             child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 4,
+                              ),
                               leading: Container(
-                                width: 34,
-                                height: 34,
+                                width: 38,
+                                height: 38,
                                 decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: const Color(0xFFC514C2)
-                                      .withOpacity(0.10),
+                                  color: const Color(0xFFF4E8FA),
+                                  borderRadius: BorderRadius.circular(14),
                                 ),
                                 child: const Icon(
                                   Icons.chat_bubble_outline_rounded,
-                                  color: Color(0xFFC514C2),
-                                  size: 18,
+                                  color: Color(0xFFA822D9),
+                                  size: 19,
                                 ),
                               ),
                               title: Text(
@@ -284,7 +287,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                                 overflow: TextOverflow.ellipsis,
                                 style: GoogleFonts.poppins(
                                   fontSize: 13.5,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w600,
                                   color: textDark,
                                 ),
                               ),
@@ -318,23 +321,23 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     return GestureDetector(
       onTap: _openPreviousChats,
       child: Container(
-        width: 32,
-        height: 32,
+        width: 40,
+        height: 40,
         decoration: BoxDecoration(
-          shape: BoxShape.circle,
           gradient: buttonGradient,
+          borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFC514C2).withOpacity(0.22),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
+              color: const Color(0xFFA822D9).withOpacity(0.22),
+              blurRadius: 16,
+              offset: const Offset(0, 7),
             ),
           ],
         ),
         child: const Icon(
-          Icons.sort_rounded,
+          Icons.menu_rounded,
           color: Colors.white,
-          size: 20,
+          size: 23,
         ),
       ),
     );
@@ -342,9 +345,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   Widget _buildTopBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 18, 14, 0),
+      padding: const EdgeInsets.fromLTRB(24, 18, 24, 0),
       child: SizedBox(
-        height: 42,
+        height: 48,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -359,10 +362,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               child: Text(
                 "mentora.",
                 style: GoogleFonts.poppins(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 30,
+                  fontWeight: FontWeight.w600,
                   color: Colors.white,
-                  letterSpacing: 0.3,
+                  letterSpacing: -0.5,
                 ),
               ),
             ),
@@ -372,38 +375,113 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     );
   }
 
+  Widget _buildAssistantBadge() {
+    return Container(
+      height: 104,
+      width: 104,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFDF2FF), Color(0xFFF3E7FA)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFA822D9).withOpacity(0.16),
+            blurRadius: 28,
+            offset: const Offset(0, 14),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFFE8D4F5),
+          width: 1.2,
+        ),
+      ),
+      child: Center(
+        child: Container(
+          height: 58,
+          width: 58,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.75),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: const Color(0xFFE5D3F4),
+              width: 1.2,
+            ),
+          ),
+          child: const Icon(
+            Icons.favorite_border_rounded,
+            color: Color(0xFFA822D9),
+            size: 28,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildWelcomeScreen() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30),
+      padding: const EdgeInsets.fromLTRB(28, 24, 28, 22),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const Spacer(),
+
+          _buildAssistantBadge(),
+
+          const SizedBox(height: 28),
+
+          Text(
+            "Ask Mentora",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              color: textDark,
+              fontSize: 28,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.5,
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
           RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
               style: GoogleFonts.poppins(
                 color: subTextLight,
-                fontSize: 16,
-                height: 1.35,
+                fontSize: 14.5,
+                height: 1.55,
                 fontWeight: FontWeight.w400,
               ),
               children: [
-                const TextSpan(text: "Hello! I'm "),
+                const TextSpan(text: "Your ostomy care assistant for "),
                 TextSpan(
-                  text: "Mentora.",
+                  text: "training, pouching, complications, ",
                   style: GoogleFonts.poppins(
-                    color: const Color(0xFFC514C2),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFFA822D9),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const TextSpan(
-                  text: " Ask me anything\nrelated to ostomy care and training.",
-                ),
+                const TextSpan(text: "and patient education."),
               ],
             ),
           ),
-          const SizedBox(height: 28),
+
+          const SizedBox(height: 26),
+
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
+            children: const [
+              _SuggestionChip(text: "Stoma care basics"),
+              _SuggestionChip(text: "Skin irritation"),
+              _SuggestionChip(text: "Pouch leakage"),
+            ],
+          ),
+
+          const Spacer(),
+
           _buildInputBar(isWelcome: true),
         ],
       ),
@@ -417,23 +495,22 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        constraints: const BoxConstraints(maxWidth: 285),
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
+        constraints: const BoxConstraints(maxWidth: 290),
         decoration: BoxDecoration(
           gradient: isUser ? buttonGradient : null,
-          color: isUser ? null : Colors.white,
+          color: isUser ? null : surfaceLight,
           borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(isUser ? 16 : 4),
-            bottomRight: Radius.circular(isUser ? 4 : 16),
+            topLeft: const Radius.circular(18),
+            topRight: const Radius.circular(18),
+            bottomLeft: Radius.circular(isUser ? 18 : 5),
+            bottomRight: Radius.circular(isUser ? 5 : 18),
           ),
-          border:
-          isUser ? null : Border.all(color: borderLight.withOpacity(0.6)),
+          border: isUser ? null : Border.all(color: borderLight),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.035),
-              blurRadius: 8,
+              blurRadius: 9,
               offset: const Offset(0, 3),
             ),
           ],
@@ -442,8 +519,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           message.text,
           style: GoogleFonts.poppins(
             color: isUser ? Colors.white : textDark,
-            fontSize: 13.2,
-            height: 1.35,
+            fontSize: 13.3,
+            height: 1.42,
           ),
         ),
       ),
@@ -455,11 +532,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       alignment: Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: borderLight.withOpacity(0.6)),
+          color: surfaceLight,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: borderLight),
         ),
         child: Text(
           "Mentora is typing...",
@@ -476,7 +553,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   Widget _buildChatArea() {
     return ListView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.fromLTRB(20, 22, 20, 10),
+      padding: const EdgeInsets.fromLTRB(22, 24, 22, 12),
       itemCount: _messages.length + (_isLoading ? 1 : 0),
       itemBuilder: (context, index) {
         if (_isLoading && index == _messages.length) {
@@ -496,17 +573,17 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         isWelcome ? 0 : 18,
       ),
       child: Container(
-        height: 46,
-        padding: const EdgeInsets.only(left: 16, right: 5),
+        height: 54,
+        padding: const EdgeInsets.only(left: 18, right: 6),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(26),
-          border: Border.all(color: Colors.grey.withOpacity(0.22)),
+          color: surfaceLight,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: borderLight),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
+              color: Colors.black.withOpacity(0.055),
+              blurRadius: 16,
+              offset: const Offset(0, 7),
             ),
           ],
         ),
@@ -524,36 +601,41 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   fontSize: 14,
                 ),
                 decoration: InputDecoration(
-                  hintText: "Ask Mentora...",
+                  hintText: "Ask about ostomy care...",
                   hintStyle: GoogleFonts.poppins(
-                    color: subTextLight.withOpacity(0.7),
-                    fontSize: 14,
+                    color: subTextLight.withOpacity(0.72),
+                    fontSize: 13.5,
                   ),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
-                  disabledBorder: InputBorder.none,
-                  errorBorder: InputBorder.none,
-                  focusedErrorBorder: InputBorder.none,
                   isCollapsed: true,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
                 ),
               ),
             ),
             GestureDetector(
               onTap: _isLoading ? null : _sendMessage,
               child: Container(
-                width: 34,
-                height: 34,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
                   gradient: _isLoading ? null : buttonGradient,
                   color: _isLoading ? Colors.grey.shade400 : null,
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    if (!_isLoading)
+                      BoxShadow(
+                        color: const Color(0xFFA822D9).withOpacity(0.22),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
+                      ),
+                  ],
                 ),
                 child: const Icon(
-                  Icons.send_rounded,
+                  Icons.arrow_upward_rounded,
                   color: Colors.white,
-                  size: 18,
+                  size: 22,
                 ),
               ),
             ),
@@ -581,6 +663,32 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             ),
             if (_hasStartedChat) _buildInputBar(),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SuggestionChip extends StatelessWidget {
+  final String text;
+
+  const _SuggestionChip({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4E8FA),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE8D4F5)),
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.poppins(
+          color: const Color(0xFFA822D9),
+          fontSize: 11.8,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
