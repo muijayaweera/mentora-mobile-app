@@ -1,16 +1,69 @@
-# ostomy_training_app
+# Mentora – AI-Powered Ostomy Care Training Mobile Application
 
-A new Flutter project.
+## Overview
 
-## Getting Started
+Mentora is an AI-supported mobile learning platform developed to improve ostomy care education for healthcare professionals in Sri Lanka. The system was designed as part of a final-year Software Engineering project and aims to provide accessible, structured, and technology-enhanced training for nurses and trainee healthcare workers.
 
-This project is a starting point for a Flutter application.
+The mobile application combines educational content, quizzes, artificial intelligence features, and progress tracking within a single platform to support continuous learning and practical skill development.
 
-A few resources to get you started if this is your first Flutter project:
+---
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Key Features
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+* Structured ostomy care learning courses
+* Module-based educational content
+* Quiz and progress tracking system
+* AI-powered ostomy care chatbot
+* TensorFlow Lite image recognition system
+* Stoma complication classification support
+* Firebase authentication and cloud integration
+* User-friendly Flutter-based mobile interface
+
+---
+
+## Technologies Used
+
+* Flutter
+* Dart
+* Firebase Authentication
+* Cloud Firestore
+* Firebase Storage
+* Firebase Cloud Functions
+* OpenAI API
+* TensorFlow Lite
+
+---
+
+## AI Features
+
+### Chatbot System
+
+The chatbot feature provides real-time educational responses related to ostomy care using an OpenAI-powered backend integrated through Firebase Cloud Functions.
+
+### Image Recognition
+
+The image analysis module uses a TensorFlow Lite model to classify healthy stomas and multiple common complications directly within the mobile application.
+
+---
+
+## APK Download
+
+
+
+---
+
+## Installation
+
+1. Download the APK file
+2. Enable "Install Unknown Apps" on Android
+3. Install the APK
+4. Launch the Mentora application
+
+---
+
+## Author
+
+Upeka Jayaweera
+BSc (Hons) Software Engineering
+NSBM Green University
+
