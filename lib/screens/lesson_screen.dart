@@ -8,8 +8,9 @@ import '../models/badge_award.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import '../constants/ui_constants.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
+import '../constants/ui_constants.dart';
 
 class LessonScreen extends StatefulWidget {
   final List<Lesson> allLessons;
@@ -29,9 +30,21 @@ class LessonScreen extends StatefulWidget {
 
 class _LessonScreenState extends State<LessonScreen> {
   final ScrollController _scrollController = ScrollController();
+
   YoutubePlayerController? _youtubeController;
+
   late int currentIndex;
+
   bool isCheckingQuiz = false;
+
+  final FlutterTts flutterTts = FlutterTts();
+
+  bool isSpeaking = false;
+  bool isPaused = false;
+  bool isManualStop = false;
+
+  List<String> currentParagraphs = [];
+  int currentParagraphIndex = 0;
 
   static const Color primaryPurple = Color(0xFFA822D9);
   static const Color primaryPink = Color(0xFFC514C2);
@@ -40,12 +53,172 @@ class _LessonScreenState extends State<LessonScreen> {
   @override
   void initState() {
     super.initState();
+
     currentIndex = widget.startIndex;
+
     _setupYoutubeController();
+    _prepareParagraphs();
+    _setupTts();
+  }
+
+  Future<void> _setupTts() async {
+    await flutterTts.setLanguage("en-US");
+    await flutterTts.setSpeechRate(0.45);
+    await flutterTts.setPitch(1.0);
+    await flutterTts.setVolume(1.0);
+
+    flutterTts.setStartHandler(() {
+      if (mounted) {
+        setState(() {
+          isSpeaking = true;
+          isPaused = false;
+        });
+      }
+    });
+
+    flutterTts.setCompletionHandler(() async {
+      if (isManualStop) {
+        isManualStop = false;
+
+        if (mounted) {
+          setState(() {
+            isSpeaking = false;
+            isPaused = false;
+          });
+        }
+
+        return;
+      }
+
+      if (currentParagraphIndex <
+          currentParagraphs.length - 1) {
+        currentParagraphIndex++;
+
+        await flutterTts.speak(
+          currentParagraphs[currentParagraphIndex],
+        );
+
+        if (mounted) {
+          setState(() {});
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            isSpeaking = false;
+            isPaused = false;
+          });
+        }
+      }
+    });
+
+    flutterTts.setCancelHandler(() {
+      if (mounted) {
+        setState(() {
+          isSpeaking = false;
+          isPaused = false;
+        });
+      }
+    });
+  }
+
+  void _prepareParagraphs() {
+    final lesson = widget.allLessons[currentIndex];
+
+    currentParagraphs = lesson.content
+        .split('\n\n')
+        .where((p) => p.trim().isNotEmpty)
+        .toList();
+
+    currentParagraphIndex = 0;
+  }
+
+  Future<void> _speakLesson() async {
+    if (currentParagraphs.isEmpty) return;
+
+    await flutterTts.speak(
+      currentParagraphs[currentParagraphIndex],
+    );
+  }
+
+  Future<void> _pauseSpeaking() async {
+    await flutterTts.pause();
+
+    if (mounted) {
+      setState(() {
+        isPaused = true;
+        isSpeaking = false;
+      });
+    }
+  }
+
+  Future<void> _resumeSpeaking() async {
+    if (currentParagraphs.isEmpty) return;
+
+    await flutterTts.speak(
+      currentParagraphs[currentParagraphIndex],
+    );
+
+    if (mounted) {
+      setState(() {
+        isPaused = false;
+        isSpeaking = true;
+      });
+    }
+  }
+
+  Future<void> _stopSpeaking() async {
+    isManualStop = true;
+
+    await flutterTts.stop();
+
+    if (mounted) {
+      setState(() {
+        isSpeaking = false;
+        isPaused = false;
+      });
+    }
+  }
+
+  Future<void> _nextParagraph() async {
+    if (currentParagraphIndex <
+        currentParagraphs.length - 1) {
+      currentParagraphIndex++;
+
+      isManualStop = true;
+
+      await flutterTts.stop();
+
+      await flutterTts.speak(
+        currentParagraphs[currentParagraphIndex],
+      );
+
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  Future<void> _previousParagraph() async {
+    if (currentParagraphIndex > 0) {
+      currentParagraphIndex--;
+
+      isManualStop = true;
+
+      await flutterTts.stop();
+
+      await flutterTts.speak(
+        currentParagraphs[currentParagraphIndex],
+      );
+
+      if (mounted) {
+        setState(() {});
+      }
+    }
   }
 
   @override
   void dispose() {
+    flutterTts.stop();
     _youtubeController?.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -71,7 +244,9 @@ class _LessonScreenState extends State<LessonScreen> {
 
     if (lesson.videoUrl.isEmpty) return;
 
-    final videoId = YoutubePlayer.convertUrlToId(lesson.videoUrl);
+    final videoId = YoutubePlayer.convertUrlToId(
+      lesson.videoUrl,
+    );
 
     if (videoId == null) return;
 
@@ -85,19 +260,29 @@ class _LessonScreenState extends State<LessonScreen> {
   }
 
   void _changeLesson(int newIndex) {
+    _stopSpeaking();
+
     setState(() {
       currentIndex = newIndex;
+
       _setupYoutubeController();
+      _prepareParagraphs();
     });
 
     _scrollToTop();
   }
 
-  Future<void> saveProgress({bool completed = false}) async {
+  Future<void> saveProgress({
+    bool completed = false,
+  }) async {
     final user = FirebaseAuth.instance.currentUser;
+
     if (user == null) return;
 
-    await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .set(
       {
         'courseProgress': {
           widget.courseId: {
@@ -112,6 +297,7 @@ class _LessonScreenState extends State<LessonScreen> {
 
   Future<bool> hasBadge(String badgeId) async {
     final user = FirebaseAuth.instance.currentUser;
+
     if (user == null) return true;
 
     final doc = await FirebaseFirestore.instance
@@ -126,9 +312,13 @@ class _LessonScreenState extends State<LessonScreen> {
 
   Future<void> awardBadge(BadgeAward badge) async {
     final user = FirebaseAuth.instance.currentUser;
+
     if (user == null) return;
 
-    final alreadyEarned = await hasBadge(badge.id);
+    final alreadyEarned = await hasBadge(
+      badge.id,
+    );
+
     if (alreadyEarned) return;
 
     await FirebaseFirestore.instance
@@ -146,10 +336,13 @@ class _LessonScreenState extends State<LessonScreen> {
     });
 
     if (!mounted) return;
+
     await showBadgeDialog(badge);
   }
 
-  Future<void> showBadgeDialog(BadgeAward badge) async {
+  Future<void> showBadgeDialog(
+      BadgeAward badge,
+      ) async {
     if (!mounted) return;
 
     await showDialog(
@@ -163,13 +356,22 @@ class _LessonScreenState extends State<LessonScreen> {
           title: Text(
             'Badge Unlocked!',
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w700,
+            ),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(badge.icon, style: const TextStyle(fontSize: 50)),
+              Text(
+                badge.icon,
+                style: const TextStyle(
+                  fontSize: 50,
+                ),
+              ),
+
               const SizedBox(height: 12),
+
               Text(
                 badge.title,
                 textAlign: TextAlign.center,
@@ -178,7 +380,9 @@ class _LessonScreenState extends State<LessonScreen> {
                   fontWeight: FontWeight.w700,
                 ),
               ),
+
               const SizedBox(height: 8),
+
               Text(
                 badge.description,
                 textAlign: TextAlign.center,
@@ -193,7 +397,9 @@ class _LessonScreenState extends State<LessonScreen> {
           actions: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFA822D9),
+                backgroundColor: const Color(
+                  0xFFA822D9,
+                ),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -204,7 +410,9 @@ class _LessonScreenState extends State<LessonScreen> {
               },
               child: Text(
                 'Yay!',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -218,14 +426,17 @@ class _LessonScreenState extends State<LessonScreen> {
       BadgeAward(
         id: 'course_completed_${widget.courseId}',
         title: 'Course Completed',
-        description: 'You completed all lessons in this course.',
+        description:
+        'You completed all lessons in this course.',
         icon: '📘',
         type: 'course',
       ),
     );
   }
 
-  Future<List<QuizQuestion>> fetchQuizQuestions(String lessonId) async {
+  Future<List<QuizQuestion>> fetchQuizQuestions(
+      String lessonId,
+      ) async {
     final snapshot = await FirebaseFirestore.instance
         .collection('courses')
         .doc(widget.courseId)
@@ -234,10 +445,16 @@ class _LessonScreenState extends State<LessonScreen> {
         .collection('questions')
         .get();
 
-    return snapshot.docs.map((doc) => QuizQuestion.fromDoc(doc)).toList();
+    return snapshot.docs
+        .map(
+          (doc) => QuizQuestion.fromDoc(doc),
+    )
+        .toList();
   }
 
-  Future<void> openQuizThenProceed({required bool completeCourse}) async {
+  Future<void> openQuizThenProceed({
+    required bool completeCourse,
+  }) async {
     final lesson = widget.allLessons[currentIndex];
 
     setState(() {
@@ -245,7 +462,8 @@ class _LessonScreenState extends State<LessonScreen> {
     });
 
     try {
-      final questions = await fetchQuizQuestions(lesson.id);
+      final questions =
+      await fetchQuizQuestions(lesson.id);
 
       if (!mounted) return;
 
@@ -270,19 +488,28 @@ class _LessonScreenState extends State<LessonScreen> {
       }
 
       if (completeCourse) {
-        await saveProgress(completed: true);
+        await saveProgress(
+          completed: true,
+        );
 
         if (!mounted) return;
+
         await checkCourseCompletionBadge();
 
         if (!mounted) return;
-        Navigator.of(context).pop(currentIndex);
+
+        Navigator.of(context).pop(
+          currentIndex,
+        );
       } else {
         _changeLesson(currentIndex + 1);
+
         await saveProgress();
       }
     } catch (e) {
-      debugPrint('Error opening quiz: $e');
+      debugPrint(
+        'Error opening quiz: $e',
+      );
 
       if (!mounted) return;
 
@@ -290,9 +517,12 @@ class _LessonScreenState extends State<LessonScreen> {
         isCheckingQuiz = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
         const SnackBar(
-          content: Text('Could not load quiz. Please try again.'),
+          content: Text(
+            'Could not load quiz. Please try again.',
+          ),
         ),
       );
     }
@@ -300,15 +530,31 @@ class _LessonScreenState extends State<LessonScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final lesson = widget.allLessons[currentIndex];
-    final isFirstLesson = currentIndex == 0;
-    final isLastLesson = currentIndex == widget.allLessons.length - 1;
-    final progressValue = (currentIndex + 1) / widget.allLessons.length;
+    final lesson =
+    widget.allLessons[currentIndex];
+
+    final isFirstLesson =
+        currentIndex == 0;
+
+    final isLastLesson =
+        currentIndex ==
+            widget.allLessons.length - 1;
+
+    final progressValue =
+        (currentIndex + 1) /
+            widget.allLessons.length;
 
     return WillPopScope(
       onWillPop: () async {
         await saveProgress();
-        Navigator.pop(context, currentIndex);
+
+        await _stopSpeaking();
+
+        Navigator.pop(
+          context,
+          currentIndex,
+        );
+
         return false;
       },
       child: Scaffold(
@@ -321,7 +567,10 @@ class _LessonScreenState extends State<LessonScreen> {
           title: ShaderMask(
             shaderCallback: (bounds) {
               return const LinearGradient(
-                colors: [Color(0xFFC514C2), Color(0xFFA822D9)],
+                colors: [
+                  Color(0xFFC514C2),
+                  Color(0xFFA822D9),
+                ],
               ).createShader(bounds);
             },
             child: Text(
@@ -337,53 +586,288 @@ class _LessonScreenState extends State<LessonScreen> {
         ),
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 6, 24, 28),
+            padding:
+            const EdgeInsets.fromLTRB(
+              24,
+              6,
+              24,
+              28,
+            ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
               children: [
-                _lessonHeader(lesson, progressValue),
+                _lessonHeader(
+                  lesson,
+                  progressValue,
+                ),
 
                 const SizedBox(height: 16),
 
                 Expanded(
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+                    padding:
+                    const EdgeInsets.fromLTRB(
+                      18,
+                      18,
+                      18,
+                      18,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.black.withOpacity(0.04)),
+                      borderRadius:
+                      BorderRadius.circular(
+                        24,
+                      ),
+                      border: Border.all(
+                        color: Colors.black
+                            .withOpacity(0.04),
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.035),
+                          color: Colors.black
+                              .withOpacity(0.035),
                           blurRadius: 14,
-                          offset: const Offset(0, 6),
+                          offset:
+                          const Offset(0, 6),
                         ),
                       ],
                     ),
                     child: SingleChildScrollView(
-                      controller: _scrollController,
+                      controller:
+                      _scrollController,
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment:
+                        CrossAxisAlignment
+                            .start,
                         children: [
-                          if (_youtubeController != null) ...[
+                          if (_youtubeController !=
+                              null) ...[
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(18),
-                              child: YoutubePlayer(
-                                controller: _youtubeController!,
-                                showVideoProgressIndicator: true,
-                                progressIndicatorColor: primaryPurple,
+                              borderRadius:
+                              BorderRadius
+                                  .circular(
+                                18,
+                              ),
+                              child:
+                              YoutubePlayer(
+                                controller:
+                                _youtubeController!,
+                                showVideoProgressIndicator:
+                                true,
+                                progressIndicatorColor:
+                                primaryPurple,
                               ),
                             ),
-                            const SizedBox(height: 18),
+
+                            const SizedBox(
+                              height: 18,
+                            ),
                           ],
+
+                          Row(
+                            children: [
+                              Container(
+                                height: 48,
+                                width: 48,
+                                decoration:
+                                BoxDecoration(
+                                  color:
+                                  const Color(
+                                    0xFFF4E9FA,
+                                  ),
+                                  borderRadius:
+                                  BorderRadius
+                                      .circular(
+                                    14,
+                                  ),
+                                ),
+                                child: IconButton(
+                                  onPressed:
+                                      () async {
+                                    await _previousParagraph();
+                                  },
+                                  icon:
+                                  const Icon(
+                                    Icons
+                                        .skip_previous_rounded,
+                                    color:
+                                    primaryPurple,
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(
+                                width: 10,
+                              ),
+
+                              Expanded(
+                                child:
+                                ElevatedButton
+                                    .icon(
+                                  style:
+                                  ElevatedButton
+                                      .styleFrom(
+                                    backgroundColor: const Color(0xFFF4E9FA),
+                                    foregroundColor: primaryPurple,
+                                    side: BorderSide(
+                                      color: primaryPurple.withOpacity(0.18),
+                                    ),
+                                    elevation: 0,
+                                    padding:
+                                    const EdgeInsets
+                                        .symmetric(
+                                      vertical: 14,
+                                    ),
+                                    shape:
+                                    RoundedRectangleBorder(
+                                      borderRadius:
+                                      BorderRadius.circular(
+                                        16,
+                                      ),
+                                    ),
+                                  ),
+                                  onPressed:
+                                      () async {
+                                    if (isPaused) {
+                                      await _resumeSpeaking();
+                                    } else if (isSpeaking) {
+                                      await _pauseSpeaking();
+                                    } else {
+                                      await _speakLesson();
+                                    }
+                                  },
+                                  icon: Icon(
+                                    color: primaryPurple,
+                                    isSpeaking
+                                        ? Icons.pause_rounded
+                                        : Icons.play_arrow_rounded,
+                                  ),
+                                  label: Text(
+                                    isSpeaking
+                                        ? 'Pause Audio'
+                                        : isPaused
+                                        ? 'Resume Audio'
+                                        : 'Listen to Module',
+                                    style:
+                                    GoogleFonts.poppins(
+                                      fontWeight:
+                                      FontWeight
+                                          .w600,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(
+                                width: 10,
+                              ),
+
+                              Container(
+                                height: 48,
+                                width: 48,
+                                decoration:
+                                BoxDecoration(
+                                  color:
+                                  const Color(
+                                    0xFFF4E9FA,
+                                  ),
+                                  borderRadius:
+                                  BorderRadius
+                                      .circular(
+                                    14,
+                                  ),
+                                ),
+                                child: IconButton(
+                                  onPressed:
+                                      () async {
+                                    await _nextParagraph();
+                                  },
+                                  icon:
+                                  const Icon(
+                                    Icons
+                                        .skip_next_rounded,
+                                    color:
+                                    primaryPurple,
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(
+                                width: 10,
+                              ),
+
+                              Container(
+                                height: 44,
+                                width: 44,
+                                decoration:
+                                BoxDecoration(
+                                  border:
+                                  Border.all(
+                                    color:
+                                    primaryPurple
+                                        .withOpacity(
+                                      0.18,
+                                    ),
+                                  ),
+                                  color:
+                                  Colors.white,
+                                  borderRadius:
+                                  BorderRadius
+                                      .circular(
+                                    14,
+                                  ),
+                                ),
+                                child: IconButton(
+                                  onPressed:
+                                      () async {
+                                    await _stopSpeaking();
+                                  },
+                                  icon:
+                                  const Icon(
+                                    Icons
+                                        .stop_rounded,
+                                    color:
+                                    primaryPurple,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(
+                            height: 14,
+                          ),
+
+                          Text(
+                            'Section ${currentParagraphIndex + 1} of ${currentParagraphs.length}',
+                            style:
+                            GoogleFonts.poppins(
+                              color:
+                              subTextLight,
+                              fontSize: 12,
+                              fontWeight:
+                              FontWeight.w500,
+                            ),
+                          ),
+
+                          const SizedBox(
+                            height: 22,
+                          ),
+
                           Text(
                             lesson.content,
-                            style: GoogleFonts.poppins(
-                              color: Colors.black87,
+                            style:
+                            GoogleFonts.poppins(
+                              color:
+                              Colors.black87,
                               fontSize: 14.5,
                               height: 1.75,
-                              fontWeight: FontWeight.w400,
+                              fontWeight:
+                              FontWeight.w400,
                             ),
                           ),
                         ],
@@ -396,7 +880,8 @@ class _LessonScreenState extends State<LessonScreen> {
 
                 if (isCheckingQuiz)
                   const Center(
-                    child: CircularProgressIndicator(
+                    child:
+                    CircularProgressIndicator(
                       color: primaryPurple,
                     ),
                   )
@@ -404,7 +889,9 @@ class _LessonScreenState extends State<LessonScreen> {
                   _primaryButton(
                     text: 'Complete Module',
                     onPressed: () async {
-                      await openQuizThenProceed(completeCourse: true);
+                      await openQuizThenProceed(
+                        completeCourse: true,
+                      );
                     },
                   )
                 else
@@ -414,37 +901,70 @@ class _LessonScreenState extends State<LessonScreen> {
                         Expanded(
                           flex: 4,
                           child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: primaryPurple,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            style:
+                            OutlinedButton
+                                .styleFrom(
+                              foregroundColor:
+                              primaryPurple,
+                              padding:
+                              const EdgeInsets
+                                  .symmetric(
+                                vertical: 14,
+                              ),
                               side: BorderSide(
-                                color: primaryPurple.withOpacity(0.75),
+                                color:
+                                primaryPurple
+                                    .withOpacity(
+                                  0.75,
+                                ),
                                 width: 1.3,
                               ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(17),
+                              shape:
+                              RoundedRectangleBorder(
+                                borderRadius:
+                                BorderRadius
+                                    .circular(
+                                  17,
+                                ),
                               ),
                             ),
-                            onPressed: () async {
-                              _changeLesson(currentIndex - 1);
+                            onPressed:
+                                () async {
+                              _changeLesson(
+                                currentIndex -
+                                    1,
+                              );
+
                               await saveProgress();
                             },
                             child: Text(
                               'Previous',
-                              style: GoogleFonts.poppins(
+                              style:
+                              GoogleFonts
+                                  .poppins(
                                 fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                                fontWeight:
+                                FontWeight
+                                    .w600,
                               ),
                             ),
                           ),
                         ),
-                      if (!isFirstLesson) const SizedBox(width: 12),
+
+                      if (!isFirstLesson)
+                        const SizedBox(
+                          width: 12,
+                        ),
+
                       Expanded(
                         flex: 6,
                         child: _primaryButton(
                           text: 'Next Lesson',
                           onPressed: () async {
-                            await openQuizThenProceed(completeCourse: false);
+                            await openQuizThenProceed(
+                              completeCourse:
+                              false,
+                            );
                           },
                         ),
                       ),
@@ -458,17 +978,25 @@ class _LessonScreenState extends State<LessonScreen> {
     );
   }
 
-  Widget _lessonHeader(Lesson lesson, double progressValue) {
+  Widget _lessonHeader(
+      Lesson lesson,
+      double progressValue,
+      ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: primaryPurple.withOpacity(0.08)),
+        borderRadius:
+        BorderRadius.circular(22),
+        border: Border.all(
+          color:
+          primaryPurple.withOpacity(0.08),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color:
+            Colors.black.withOpacity(0.04),
             blurRadius: 14,
             offset: const Offset(0, 6),
           ),
@@ -481,11 +1009,15 @@ class _LessonScreenState extends State<LessonScreen> {
             width: 44,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [primaryPurple, primaryPink],
+                colors: [
+                  primaryPurple,
+                  primaryPink,
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(15),
+              borderRadius:
+              BorderRadius.circular(15),
             ),
             child: const Icon(
               Icons.menu_book_rounded,
@@ -493,38 +1025,60 @@ class _LessonScreenState extends State<LessonScreen> {
               size: 23,
             ),
           ),
+
           const SizedBox(width: 13),
+
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
               children: [
                 Text(
                   lesson.title,
                   maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.poppins(
+                  overflow:
+                  TextOverflow.ellipsis,
+                  style:
+                  GoogleFonts.poppins(
                     color: textDark,
                     fontSize: 16.5,
-                    fontWeight: FontWeight.w700,
+                    fontWeight:
+                    FontWeight.w700,
                     height: 1.25,
                   ),
                 ),
+
                 const SizedBox(height: 6),
+
                 Text(
                   'Lesson ${currentIndex + 1} of ${widget.allLessons.length}',
-                  style: GoogleFonts.poppins(
+                  style:
+                  GoogleFonts.poppins(
                     color: subTextLight,
                     fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                    fontWeight:
+                    FontWeight.w500,
                   ),
                 ),
+
                 const SizedBox(height: 8),
+
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: LinearProgressIndicator(
+                  borderRadius:
+                  BorderRadius.circular(
+                    12,
+                  ),
+                  child:
+                  LinearProgressIndicator(
                     value: progressValue,
-                    backgroundColor: const Color(0xFFF0EAF5),
-                    valueColor: const AlwaysStoppedAnimation(primaryPurple),
+                    backgroundColor:
+                    const Color(
+                      0xFFF0EAF5,
+                    ),
+                    valueColor:
+                    const AlwaysStoppedAnimation(
+                      primaryPurple,
+                    ),
                     minHeight: 5,
                   ),
                 ),
@@ -546,10 +1100,15 @@ class _LessonScreenState extends State<LessonScreen> {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white,
-          backgroundColor: primaryPurple,
+          backgroundColor:
+          primaryPurple,
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(17),
+          shape:
+          RoundedRectangleBorder(
+            borderRadius:
+            BorderRadius.circular(
+              17,
+            ),
           ),
         ),
         onPressed: onPressed,
@@ -557,7 +1116,8 @@ class _LessonScreenState extends State<LessonScreen> {
           text,
           style: GoogleFonts.poppins(
             fontSize: 14.5,
-            fontWeight: FontWeight.w700,
+            fontWeight:
+            FontWeight.w700,
           ),
         ),
       ),
