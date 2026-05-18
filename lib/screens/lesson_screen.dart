@@ -385,10 +385,11 @@ class _LessonScreenState extends State<LessonScreen> {
 
               Text(
                 badge.description,
-                textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.poppins(
                   fontSize: 13,
-                  color: subTextLight,
+                  color: Colors.grey,
                 ),
               ),
             ],
@@ -718,6 +719,7 @@ class _LessonScreenState extends State<LessonScreen> {
                                     padding:
                                     const EdgeInsets
                                         .symmetric(
+                                      horizontal: 10,
                                       vertical: 14,
                                     ),
                                     shape:
@@ -744,18 +746,19 @@ class _LessonScreenState extends State<LessonScreen> {
                                         ? Icons.pause_rounded
                                         : Icons.play_arrow_rounded,
                                   ),
-                                  label: Text(
-                                    isSpeaking
-                                        ? 'Pause Audio'
-                                        : isPaused
-                                        ? 'Resume Audio'
-                                        : 'Listen to Module',
-                                    style:
-                                    GoogleFonts.poppins(
-                                      fontWeight:
-                                      FontWeight
-                                          .w600,
-                                      fontSize: 14,
+                                  label: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      isSpeaking
+                                          ? 'Pause Audio'
+                                          : isPaused
+                                          ? 'Resume Audio'
+                                          : 'Listen to Module',
+                                      maxLines: 1,
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13,
+                                      ),
                                     ),
                                   ),
                                 ),

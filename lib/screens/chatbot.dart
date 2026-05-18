@@ -382,7 +382,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: const LinearGradient(
-          colors: [Color(0xFFFDF2FF), Color(0xFFF3E7FA)],
+          colors: [
+            Color(0xFFFDF2FF),
+            Color(0xFFF3E7FA),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -411,7 +414,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             ),
           ),
           child: const Icon(
-            Icons.favorite_border_rounded,
+            Icons.chat_bubble_outline_rounded,
             color: Color(0xFFA822D9),
             size: 28,
           ),
@@ -421,15 +424,23 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   }
 
   Widget _buildWelcomeScreen() {
+    final keyboardOpen =
+        MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(28, 24, 28, 22),
+      padding: EdgeInsets.fromLTRB(
+        28,
+        keyboardOpen ? 20 : 70,
+        28,
+        keyboardOpen ? 20 : 30,
+      ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          const Spacer(),
 
           _buildAssistantBadge(),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 26),
 
           Text(
             "Ask Mentora",
@@ -442,7 +453,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
           RichText(
             textAlign: TextAlign.center,
@@ -454,33 +465,27 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 fontWeight: FontWeight.w400,
               ),
               children: [
-                const TextSpan(text: "Your ostomy care assistant for "),
+                const TextSpan(
+                  text:
+                  "Your ostomy care assistant for ",
+                ),
                 TextSpan(
-                  text: "training, pouching, complications, ",
+                  text:
+                  "training, pouching, complications, ",
                   style: GoogleFonts.poppins(
                     color: const Color(0xFFA822D9),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const TextSpan(text: "and patient education."),
+                const TextSpan(
+                  text:
+                  "and patient education.",
+                ),
               ],
             ),
           ),
 
           const SizedBox(height: 26),
-
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 8,
-            runSpacing: 8,
-            children: const [
-              _SuggestionChip(text: "Stoma care basics"),
-              _SuggestionChip(text: "Skin irritation"),
-              _SuggestionChip(text: "Pouch leakage"),
-            ],
-          ),
-
-          const Spacer(),
 
           _buildInputBar(isWelcome: true),
         ],
@@ -648,18 +653,21 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: bgLight,
       body: SafeArea(
         child: Column(
           children: [
             _buildTopBar(),
             Expanded(
-              child: AnimatedSwitcher(
+                child: Center(
+                  child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 250),
                 child: _hasStartedChat
                     ? _buildChatArea()
                     : _buildWelcomeScreen(),
-              ),
+                  ),
+                ),
             ),
             if (_hasStartedChat) _buildInputBar(),
           ],
@@ -669,28 +677,3 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   }
 }
 
-class _SuggestionChip extends StatelessWidget {
-  final String text;
-
-  const _SuggestionChip({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF4E8FA),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE8D4F5)),
-      ),
-      child: Text(
-        text,
-        style: GoogleFonts.poppins(
-          color: const Color(0xFFA822D9),
-          fontSize: 11.8,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-}

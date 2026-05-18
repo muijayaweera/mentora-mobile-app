@@ -152,7 +152,7 @@ class _BadgeDetailsScreenState extends State<BadgeDetailsScreen> {
                     crossAxisCount: 2,
                     crossAxisSpacing: 14,
                     mainAxisSpacing: 14,
-                    childAspectRatio: 0.88,
+                    childAspectRatio: 0.72,
                   ),
                   itemBuilder: (context, index) {
                     final badgeTemplate = allPossibleBadges[index];
